@@ -5,15 +5,16 @@ using Discord;
 using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
-using DiscordBotTemplate.Logger;
-using DiscordBotTemplate.Utilities;
+using CountryBot.Logger;
+using CountryBot.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using static Discord.GatewayIntents;
+using CountryBot.Models;
 
 
-namespace DiscordBotTemplate;
+namespace CountryBot;
 internal class Program
 {
     private static bool IsDebug()
@@ -26,7 +27,7 @@ internal class Program
 }
 
 private DiscordSocketClient _client;
-public static IConfiguration StaticConfig { get; private set; }
+public static ConfigModel StaticConfig { get; private set; }
 public static Task Main() => new Program().MainAsync();
 
 private async Task MainAsync()
@@ -74,34 +75,22 @@ private async Task RunAsync(IHost host)
     _client = provider.GetRequiredService<DiscordSocketClient>();
 
     var config = provider.GetRequiredService<IConfigurationRoot>();
-    StaticConfig = config;
+        StaticConfig = GeneralUtility.BuildConfig("appsettings.json");
 
-    await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
+        await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
 
     _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
     commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
 
-    _client.JoinedGuild += async _ =>
-    {
-        var guildCount = _client.Guilds.Count;
-        await _client.SetGameAsync($"{guildCount} guilds play my games!", null, ActivityType.Watching);
-    };
-
-    _client.LeftGuild += async _ =>
-    {
-        var guildCount = _client.Guilds.Count;
-        await _client.SetGameAsync($"{guildCount} guilds play my games!", null, ActivityType.Watching);
-    };
-
     _client.Ready += async () =>
     {
         if (IsDebug())
-            await commands.RegisterCommandsToGuildAsync(ulong.Parse(config["testGuild"]));
+            await commands.RegisterCommandsToGuildAsync(StaticConfig.DiscordModel.TestGuildId);
         else
             await commands.RegisterCommandsGloballyAsync();
 
         var guildCount = _client.Guilds.Count;
-        await _client.SetGameAsync($"{guildCount} guilds play my games!", null, ActivityType.Watching);
+        await _client.SetGameAsync($"the world!", null, ActivityType.Watching);
 
         //var unused = new RecurringJobUtility(_client);
 
@@ -117,7 +106,7 @@ private async Task RunAsync(IHost host)
         await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"            ({GeneralUtility.ToReadableString(dateSince)} ago)"));
     };
 
-    await _client.LoginAsync(TokenType.Bot, config["tokens:discord"]);
+    await _client.LoginAsync(TokenType.Bot, StaticConfig.DiscordModel.Token);
     await _client.StartAsync();
 
     await Task.Delay(-1);

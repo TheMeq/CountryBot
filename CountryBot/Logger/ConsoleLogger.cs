@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 
-namespace DiscordBotTemplate.Logger;
+namespace CountryBot.Logger;
 
 public sealed class ConsoleLogger : Logger
 {

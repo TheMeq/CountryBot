@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DiscordBotTemplate.Logger;
+namespace CountryBot.Logger;
 
 public abstract class Logger
 {

@@ -5,7 +5,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace DiscordBotTemplate;
+namespace CountryBot;
 
 public class InteractionHandler
 {

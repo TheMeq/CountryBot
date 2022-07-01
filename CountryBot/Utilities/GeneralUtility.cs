@@ -1,6 +1,11 @@
-﻿using System;
+﻿using Discord;
+using CountryBot.Logger;
+using Newtonsoft.Json;
+using System;
+using System.IO;
+using CountryBot.Models;
 
-namespace DiscordBotTemplate.Utilities;
+namespace CountryBot.Utilities;
 
 public static class GeneralUtility
 {
@@ -30,5 +35,17 @@ public static class GeneralUtility
     {
         return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(timeStamp).ToUniversalTime();
     }
+    public static void Log(string s)
+    {
+        var log = new ConsoleLogger();
+        log.Log(new LogMessage(LogSeverity.Info, "Misc", s)).Wait();
+    }
 
+    public static ConfigModel BuildConfig(string appsettingsJson)
+    {
+        var dir = Directory.GetCurrentDirectory();
+        var json = File.ReadAllText(dir + "/" + appsettingsJson);
+        var config = JsonConvert.DeserializeObject<ConfigModel>(json);
+        return config;
+    }
 }
