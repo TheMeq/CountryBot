@@ -100,10 +100,16 @@ internal static class MySqlUtility
             {"Country", "%" + country + "%"},
         };
         var countryResults = DoQuery("SELECT * FROM valid_countries WHERE Country like @Country", arguments).ConvertToList<CountryModel>();
+        var alternativeNamesResults = DoQuery("SELECT * FROM valid_countries WHERE AlternativeNames like @Country", arguments).ConvertToList<CountryModel>();
         var alpha2Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha2 like @Country", arguments).ConvertToList<CountryModel>();
         var alpha3Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha3 like @Country", arguments).ConvertToList<CountryModel>();
 
-        var results = countryResults.Union(alpha2Results).Union(alpha3Results).DistinctBy(countryModel => countryModel.Country).ToList();
+        var results = countryResults
+            .Union(alternativeNamesResults)
+            .Union(alpha2Results)
+            .Union(alpha3Results)
+            .DistinctBy(countryModel => countryModel.Country)
+            .ToList();
         return results;
 
     }
