@@ -13,9 +13,7 @@ using Microsoft.Extensions.Hosting;
 using static Discord.GatewayIntents;
 using CountryBot.Models;
 
-
 namespace CountryBot;
-
 internal class Program
 {
     private static bool IsDebug()
