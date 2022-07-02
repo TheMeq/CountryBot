@@ -89,6 +89,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             catch (Exception e)
             {
                 Console.WriteLine($"Cannot add Emoji for {country.Country}");
+                Console.WriteLine(e);
             }
             
             var user = (SocketGuildUser) Context.User;
