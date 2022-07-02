@@ -46,5 +46,15 @@ namespace CountryBot.Embeds
             };
             return embed;
         }
+
+        public static EmbedBuilder NotInDms()
+        {
+            var embed = new EmbedBuilder
+            {
+                Title = "Don't do the commands here!",
+                Description = "These commands are guild specific, so the command has to be done in the guild you want to set the role on."
+            };
+            return embed;
+        }
     }
 }

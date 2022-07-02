@@ -6,6 +6,7 @@ using Discord.Interactions;
 using System.Threading.Tasks;
 using CountryBot.Embeds;
 using Discord.WebSocket;
+using CountryBot.Models;
 
 namespace CountryBot.Modules;
 
@@ -39,8 +40,20 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("set", "Set's your country using the country code.")]
     public async Task Set(string countryCode)
     {
-        var guildId = Context.Guild.Id;
-        await Log($"Set __ to {countryCode}");
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log($"{Context.User.Username} tried to DM the Bot.");
+            var embed = BotEmbeds.NotInDms();
+            await RespondAsync(embed: embed.Build());
+            return;
+        }
+
+        await Log($"Set {Context.User.Username} to {countryCode} in {Context.Guild.Name}");
 
         // Check if countrycode is valid
         var result = MySqlUtility.IsValidCountryCode(countryCode);
@@ -113,8 +126,19 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("remove", "Remove your currently set country.")]
     public async Task Remove()
     {
-        var guildId = Context.Guild.Id;
-        await Log($"Remove __");
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log($"{Context.User.Username} tried to DM the Bot.");
+            var embed = BotEmbeds.NotInDms();
+            await RespondAsync(embed: embed.Build());
+            return;
+        }
+        await Log($"Remove {Context.User.Username} in {Context.Guild.Name}");
         var alreadyInRole = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
         if (alreadyInRole)
         {
