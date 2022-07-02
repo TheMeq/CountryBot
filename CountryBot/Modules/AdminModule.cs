@@ -80,8 +80,8 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
                 {
                     await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to add icons...");
                     var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
-                    await Context.Guild.GetRole(roleInGuild.RoleId).ModifyAsync(x =>
-                        x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
+                    await Context.Guild.GetRole(roleInGuild.RoleId)
+                        .ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
 
                 }
                 else
