@@ -38,6 +38,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("set", "Set your country role by specifying the country code.")]
     public async Task Set(string countryCode)
     {
+        countryCode = countryCode.ToUpper();
         ulong guildId;
         try
         {
