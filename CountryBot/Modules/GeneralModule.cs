@@ -15,10 +15,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     private static ConsoleLogger _logger;
     private readonly DiscordSocketClient _client;
 
-    private async Task Log(string command, LogSeverity logSeverity = LogSeverity.Info)
+    private async Task Log(string ranCommand, LogSeverity logSeverity = LogSeverity.Info)
     {
-        await _logger.Log(
-            new LogMessage(logSeverity, "GeneralModule", $"User: {Context.User.Username} - Command: {command}"));
+        await _logger.Log(new LogMessage(logSeverity, "GeneralModule", $"User: {Context.User.Username} - Command: {ranCommand}"));
     }
 
     public GeneralModule(ConsoleLogger logger, DiscordSocketClient client)
@@ -27,17 +26,16 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         _client = client;
     }
 
-    [SlashCommand("search", "Search for your countries code.")]
-    public async Task Search(string query)
+    [SlashCommand("search", "Search for your country code.")]
+    public async Task Search(string searchQuery)
     {
-        await Log($"Search for {query}");
-        var result = MySqlUtility.Search(query);
-
-        var embed = BotEmbeds.SearchResults(result, query);
-        await RespondAsync(embed: embed.Build(), ephemeral: true);
+        await Log($"Search for {searchQuery}");
+        var searchResult = MySqlUtility.Search(searchQuery);
+        var searchEmbed = BotEmbeds.SearchResults(searchResult, searchQuery);
+        await RespondAsync(embed: searchEmbed.Build(), ephemeral: true);
     }
 
-    [SlashCommand("set", "Set's your country using the country code.")]
+    [SlashCommand("set", "Set your country role by specifying the country code.")]
     public async Task Set(string countryCode)
     {
         ulong guildId;
@@ -48,80 +46,77 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         catch
         {
             await Log($"{Context.User.Username} tried to DM the Bot.");
-            var embed = BotEmbeds.NotInDms();
-            await RespondAsync(embed: embed.Build());
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await RespondAsync(embed: invalidGuildEmbed.Build());
             return;
         }
 
         await Log($"Set {Context.User.Username} to {countryCode} in {Context.Guild.Name}");
 
-        // Check if countrycode is valid
-        var result = MySqlUtility.IsValidCountryCode(countryCode);
-        if (!result)
+        var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);
+        if (!isValidCountryCode)
         {
-            var tryThis = MySqlUtility.Search(countryCode).FirstOrDefault();
-            var errorEmbed = tryThis != null ? BotEmbeds.InvalidCountryCode(tryThis) : BotEmbeds.InvalidCountryCode();
+            var searchResult = MySqlUtility.Search(countryCode).FirstOrDefault();
+            var errorEmbed = searchResult != null ? BotEmbeds.InvalidCountryCode(searchResult) : BotEmbeds.InvalidCountryCode();
             await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
             return;
         }
 
-        var country = MySqlUtility.GetCountry(countryCode);
+        var getCountry = MySqlUtility.GetCountry(countryCode);
 
-        var alreadyInRole = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
-        if (alreadyInRole)
+        var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
+        if (isUserInRoleAlready)
         {
-            var userInfo = MySqlUtility.GetUser(guildId, Context.User.Id);
-            var user = (SocketGuildUser) Context.User;
-            var roleInfo = MySqlUtility.GetRole(guildId, userInfo.CountryId);
-            await user.RemoveRoleAsync(roleInfo.RoleId);
+            var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
+            var socketGuildUser = (SocketGuildUser) Context.User;
+            var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
+            await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
             MySqlUtility.RemoveUser(guildId, Context.User.Id);
 
-            var roleRequired = MySqlUtility.DoesRoleContainUsers(guildId, userInfo.CountryId);
-            if (!roleRequired)
+            var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
+            if (!doesRoleContainUsers)
             {
-                await Context.Guild.GetRole(roleInfo.RoleId).DeleteAsync();
-                MySqlUtility.RemoveRole(guildId, roleInfo.RoleId);
+                await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
+                MySqlUtility.RemoveRole(guildId, getRole.RoleId);
             }
         }
 
-        var doesRoleExist = MySqlUtility.DoesRoleExist(guildId, country.Id);
+        var doesRoleExist = MySqlUtility.DoesRoleExist(guildId, getCountry.Id);
         if (doesRoleExist)
         {
-            var roleInfo = MySqlUtility.GetRole(guildId, country.Id);
-            var user = (SocketGuildUser) Context.User;
-            await user.AddRoleAsync(roleInfo.RoleId);
-
+            var getRole = MySqlUtility.GetRole(guildId, getCountry.Id);
+            var socketGuildUser = (SocketGuildUser) Context.User;
+            await socketGuildUser.AddRoleAsync(getRole.RoleId);
         }
         else
         {
-            var role = await Context.Guild.CreateRoleAsync($"{country.Country}", null, null, false, false, RequestOptions.Default);
+            var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false, RequestOptions.Default);
             try
             {
-                Console.WriteLine($"Attempting to set Emoji to ':flag_{country.Alpha2.ToLower()}:'");
-                await role.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{country.Alpha2.ToLower()}:"));
-                Console.WriteLine($"Added Emoji for {country.Country}");
+                Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
+                await createdRole.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
+                Console.WriteLine($"Added Emoji for {getCountry.Country}");
             }
             catch (InvalidOperationException)
             {
-                Console.WriteLine($"Cannot add Emoji for {country.Country} on this guild as it is not boosted.");
+                Console.WriteLine($"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                Console.WriteLine($"Cannot add Emoji for {country.Country}");
-                Console.WriteLine(e);
+                Console.WriteLine($"Cannot add Emoji for {getCountry.Country}");
+                Console.WriteLine(exception);
             }
             
-            var user = (SocketGuildUser) Context.User;
-            await user.AddRoleAsync(role.Id);
-            MySqlUtility.AddRole(guildId, role.Id, country.Id);
+            var socketGuildUser = (SocketGuildUser) Context.User;
+            await socketGuildUser.AddRoleAsync(createdRole.Id);
+            MySqlUtility.AddRole(guildId, createdRole.Id, getCountry.Id);
         }
 
-        MySqlUtility.AddUser(guildId, Context.User.Id, country.Id);
-        var doneEmbed = BotEmbeds.CountrySet(country);
-        await RespondAsync(embed: doneEmbed.Build(), ephemeral: true);
-        var numberOfUsers = MySqlUtility.UserCount();
-        await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
-
+        MySqlUtility.AddUser(guildId, Context.User.Id, getCountry.Id);
+        var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
+        await RespondAsync(embed: countrySetEmbed.Build(), ephemeral: true);
+        var userCount = MySqlUtility.UserCount();
+        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 
     [SlashCommand("remove", "Remove your currently set country.")]
@@ -135,33 +130,32 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         catch
         {
             await Log($"{Context.User.Username} tried to DM the Bot.");
-            var embed = BotEmbeds.NotInDms();
-            await RespondAsync(embed: embed.Build());
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await RespondAsync(embed: invalidGuildEmbed.Build());
             return;
         }
         await Log($"Remove {Context.User.Username} in {Context.Guild.Name}");
-        var alreadyInRole = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
-        if (alreadyInRole)
+        var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
+        if (isUserInRoleAlready)
         {
-            var userInfo = MySqlUtility.GetUser(guildId, Context.User.Id);
-            var user = (SocketGuildUser) Context.User;
-            var roleInfo = MySqlUtility.GetRole(guildId, userInfo.CountryId);
-            await user.RemoveRoleAsync(roleInfo.RoleId);
+            var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
+            var socketGuildUser = (SocketGuildUser) Context.User;
+            var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
+            await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
             MySqlUtility.RemoveUser(guildId, Context.User.Id);
 
-            var roleRequired = MySqlUtility.DoesRoleContainUsers(guildId, userInfo.CountryId);
-            if (!roleRequired)
+            var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
+            if (!doesRoleContainUsers)
             {
-                await Context.Guild.GetRole(roleInfo.RoleId).DeleteAsync();
-                MySqlUtility.RemoveRole(guildId, roleInfo.RoleId);
+                await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
+                MySqlUtility.RemoveRole(guildId, getRole.RoleId);
             }
         }
 
-        var removeEmbed = BotEmbeds.CountryRemoved();
-        await RespondAsync(embed: removeEmbed.Build(), ephemeral: true);
-        var numberOfUsers = MySqlUtility.UserCount();
-        await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
-
+        var countryRemovedEmbed = BotEmbeds.CountryRemoved();
+        await RespondAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
+        var userCount = MySqlUtility.UserCount();
+        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 }
 
