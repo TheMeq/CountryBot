@@ -20,12 +20,16 @@ namespace CountryBot.Embeds
             return embed;
         }
 
-        public static EmbedBuilder InvalidCountryCode()
+        public static EmbedBuilder InvalidCountryCode(CountryModel tryThis = null)
         {
             var embed = new EmbedBuilder
             {
                 Title = $"Sorry, that isn't a valid country code."
             };
+            if (tryThis != null)
+            {
+                embed.Description += $"Did you mean: ``/set {tryThis.Alpha2}`` for {tryThis.Country}?";
+            }
             return embed;
         }
 
@@ -52,7 +56,7 @@ namespace CountryBot.Embeds
             var embed = new EmbedBuilder
             {
                 Title = "Don't do the commands here!",
-                Description = "These commands are guild specific, so the command has to be done in the guild you want to set the role on."
+                Description = "These commands are guild specific, so the command has to be done in the guild you want to set or remove the role on."
             };
             return embed;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CountryBot.Logger;
 using CountryBot.Utilities;
 using Discord;
@@ -58,7 +59,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var result = MySqlUtility.IsValidCountryCode(countryCode);
         if (!result)
         {
-            var errorEmbed = BotEmbeds.InvalidCountryCode();
+            var tryThis = MySqlUtility.Search(countryCode).FirstOrDefault();
+            var errorEmbed = tryThis != null ? BotEmbeds.InvalidCountryCode(tryThis) : BotEmbeds.InvalidCountryCode();
             await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
             return;
         }
