@@ -26,6 +26,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("purge", "Removes all the roles and data created by the bot from your server.")]
     public async Task Purge()
     {
+        await DeferAsync(ephemeral: true);
         ulong guildId;
         try
         {
@@ -35,13 +36,14 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         {
             await Log($"{Context.User.Username} tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
-            await RespondAsync(embed: invalidGuildEmbed.Build());
+            await FollowupAsync(embed: invalidGuildEmbed.Build());
             return;
         }
 
         var allRolesForGuild = MySqlUtility.GetAllRolesForGuild(guildId);
         foreach (var roleInGuild in allRolesForGuild)
         {
+            await Log($"Deleting {roleInGuild.Id} in {Context.Guild.Name}...");
             await Context.Guild.GetRole(roleInGuild.RoleId).DeleteAsync();
         }
 
@@ -49,12 +51,13 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         MySqlUtility.RemoveAllUsersForGuild(guildId);
 
         var purgeCompleteEmbed = BotEmbeds.PurgeComplete();
-        await RespondAsync(embed: purgeCompleteEmbed.Build(), ephemeral: true);
+        await FollowupAsync(embed: purgeCompleteEmbed.Build(), ephemeral: true);
     }
 
     [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
     public async Task Flags(bool enableFlags)
     {
+        await DeferAsync(ephemeral: true);
         if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
         {
             ulong guildId;
@@ -66,7 +69,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             {
                 await Log($"{Context.User.Username} tried to DM the Bot.");
                 var invalidGuildEmbed = BotEmbeds.NotInDms();
-                await RespondAsync(embed: invalidGuildEmbed.Build());
+                await FollowupAsync(embed: invalidGuildEmbed.Build());
                 return;
             }
 
@@ -75,6 +78,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             {
                 if (enableFlags)
                 {
+                    await Log($"Updating '{roleInGuild.Id}' in {Context.Guild.Name}...");
                     var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
                     await Context.Guild.GetRole(roleInGuild.RoleId).ModifyAsync(x =>
                         x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
@@ -82,19 +86,20 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
                 }
                 else
                 {
+                    await Log($"Deleting '{roleInGuild.Id}' in {Context.Guild.Name}...");
                     await Context.Guild.GetRole(roleInGuild.RoleId)
-                        .ModifyAsync(x => x.Emoji = Optional<Emoji>.Unspecified);
+                        .ModifyAsync(x => x.Emoji = null);
                 }
             }
 
             MySqlUtility.SetGuildFlag(guildId, enableFlags ? 1 : 0);
             var flagChangeCompleteEmbed = BotEmbeds.FlagChangeComplete(enableFlags);
-            await RespondAsync(embed: flagChangeCompleteEmbed.Build(), ephemeral: true);
+            await FollowupAsync(embed: flagChangeCompleteEmbed.Build(), ephemeral: true);
         }
         else
         {
             var flagChangeFailedEmbed = BotEmbeds.FlagChangeFailed();
-            await RespondAsync(embed: flagChangeFailedEmbed.Build(), ephemeral: true);
+            await FollowupAsync(embed: flagChangeFailedEmbed.Build(), ephemeral: true);
         }
     }
 
