@@ -102,7 +102,7 @@ internal static class BotEmbeds
             .WithColor(new Color(0x3BA55D));
     }
 
-    public static object FlagChangeFailed()
+    public static EmbedBuilder FlagChangeFailed()
     {
         return new EmbedBuilder()
             .WithTitle("Set Flag Role Icons")
