@@ -61,6 +61,15 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
+        var roleCount = Context.Guild.Roles.Count;
+        if (roleCount >= 249)
+        {
+            await Log($"Tried to create a role in {Context.Guild.Name} but it has reached the Role count limit.");
+            var roleCapReachedEmbed = BotEmbeds.RoleCapReached();
+            await RespondAsync(embed: roleCapReachedEmbed.Build());
+            return;
+        }
+
         await Log($"Set {Context.User.Username} to {countryCode} in {Context.Guild.Name}");
 
         var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);

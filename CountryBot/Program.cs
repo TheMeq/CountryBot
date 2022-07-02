@@ -94,8 +94,13 @@ internal class Program
                 $"            ({GeneralUtility.ToReadableString(dateSince)} ago)"));
         };
 
-
-
+        _client.LeftGuild += async guild =>
+        {
+            MySqlUtility.RemoveAllRolesForGuild(guild.Id);
+            MySqlUtility.RemoveAllUsersForGuild(guild.Id);
+            var userCount = MySqlUtility.UserCount();
+            await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
+        };
 
         await _client.LoginAsync(TokenType.Bot, StaticConfig.DiscordModel.Token);
         await _client.StartAsync();

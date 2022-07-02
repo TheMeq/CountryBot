@@ -76,4 +76,19 @@ internal static class BotEmbeds
             .AddField("/remove", "Removes your country role from this guild.")
             .WithColor(new Color(0x3BA55D));
     }
+
+    public static EmbedBuilder PurgeComplete()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Purge Completed!")
+            .WithDescription("All of the roles created by the CountryBot have been removed.");
+
+    }
+
+    public static EmbedBuilder RoleCapReached()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Role Limit Reached!")
+            .WithDescription("We can't create any more roles in this server as it has reached it's role limit.");
+    }
 }

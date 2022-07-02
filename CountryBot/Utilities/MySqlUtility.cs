@@ -242,4 +242,31 @@ internal static class MySqlUtility
         var results = DoQuery("SELECT * FROM users").ConvertToList<UserModel>();
         return results.Count;
     }
+
+    public static List<RoleModel> GetAllRolesForGuild(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        return DoQuery("SELECT * FROM roles WHERE GuildId = @GuildId",arguments).ConvertToList<RoleModel>();
+    }
+
+    public static void RemoveAllRolesForGuild(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        DoNonQuery("DELETE FROM roles WHERE GuildId = @GuildId",arguments);
+    }
+
+    public static void RemoveAllUsersForGuild(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        DoNonQuery("DELETE FROM users WHERE GuildId = @GuildId", arguments);
+    }
 }
