@@ -259,4 +259,10 @@ internal static class MySqlUtility
         };
         DoNonQuery("INSERT INTO roles (GuildId, RoleId, CountryId) VALUES (@GuildId, @RoleId, @CountryId)", arguments);
     }
+
+    public static int UserCount()
+    {
+        var results = DoQuery("SELECT * FROM users").ConvertToList<UserModel>();
+        return results.Count;
+    }
 }

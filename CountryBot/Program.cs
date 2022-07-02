@@ -72,12 +72,10 @@ private async Task RunAsync(IHost host)
     var provider = serviceScope.ServiceProvider;
 
     var commands = provider.GetRequiredService<InteractionService>();
-    _client = provider.GetRequiredService<DiscordSocketClient>();
+    _client = provider.GetRequiredService<DiscordSocketClient>(); 
+    StaticConfig = GeneralUtility.BuildConfig("appsettings.json");
 
-    var config = provider.GetRequiredService<IConfigurationRoot>();
-        StaticConfig = GeneralUtility.BuildConfig("appsettings.json");
-
-        await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
+    await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
 
     _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
     commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
@@ -88,9 +86,9 @@ private async Task RunAsync(IHost host)
             await commands.RegisterCommandsToGuildAsync(StaticConfig.DiscordModel.TestGuildId);
         else
             await commands.RegisterCommandsGloballyAsync();
-
-        var guildCount = _client.Guilds.Count;
-        await _client.SetGameAsync($"the world!", null, ActivityType.Watching);
+        
+        var numberOfUsers = MySqlUtility.UserCount();
+        await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
 
         //var unused = new RecurringJobUtility(_client);
 

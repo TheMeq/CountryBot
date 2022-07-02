@@ -5,14 +5,13 @@ using Discord.Interactions;
 using System.Threading.Tasks;
 using CountryBot.Embeds;
 using Discord.WebSocket;
-using CountryBot.Models;
-using System.Diagnostics.Metrics;
 
 namespace CountryBot.Modules;
 
 public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 {
     private static ConsoleLogger _logger;
+    private readonly DiscordSocketClient _client;
 
     private async Task Log(string command, LogSeverity logSeverity = LogSeverity.Info)
     {
@@ -20,9 +19,10 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             new LogMessage(logSeverity, "GeneralModule", $"User: {Context.User.Username} - Command: {command}"));
     }
 
-    public GeneralModule(ConsoleLogger logger)
+    public GeneralModule(ConsoleLogger logger, DiscordSocketClient client)
     {
         _logger = logger;
+        _client = client;
     }
 
     [SlashCommand("search", "Search for your countries code.")]
@@ -89,6 +89,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         MySqlUtility.AddUser(guildId, Context.User.Id, country.Id);
         var doneEmbed = BotEmbeds.CountrySet(country);
         await RespondAsync(embed: doneEmbed.Build(), ephemeral: true);
+        var numberOfUsers = MySqlUtility.UserCount();
+        await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
+
     }
 
     [SlashCommand("remove", "Remove your currently set country.")]
@@ -115,6 +118,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
         var removeEmbed = BotEmbeds.CountryRemoved();
         await RespondAsync(embed: removeEmbed.Build(), ephemeral: true);
+        var numberOfUsers = MySqlUtility.UserCount();
+        await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
+
     }
 }
 
