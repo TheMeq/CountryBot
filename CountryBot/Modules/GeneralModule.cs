@@ -57,6 +57,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);
         if (!isValidCountryCode)
         {
+            await Log($"Unable to set role for {Context.User.Username} to {countryCode} as it is invalid.");
             var searchResult = MySqlUtility.Search(countryCode).FirstOrDefault();
             var errorEmbed = searchResult != null ? BotEmbeds.InvalidCountryCode(searchResult) : BotEmbeds.InvalidCountryCode();
             await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
@@ -151,10 +152,16 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
                 MySqlUtility.RemoveRole(guildId, getRole.RoleId);
             }
+            var countryRemovedEmbed = BotEmbeds.CountryRemoved();
+            await RespondAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
         }
-
-        var countryRemovedEmbed = BotEmbeds.CountryRemoved();
-        await RespondAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
+        else
+        {
+            var notInCountryEmbed = BotEmbeds.NotInCountry();
+            await RespondAsync(embed: notInCountryEmbed.Build(), ephemeral: true);
+        }
+        
+        
         var userCount = MySqlUtility.UserCount();
         await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }

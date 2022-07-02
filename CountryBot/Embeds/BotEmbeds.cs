@@ -30,13 +30,13 @@ namespace CountryBot.Embeds
         public static EmbedBuilder CountrySet(CountryModel country)
         {
             return new EmbedBuilder()
-                .WithTitle($"Your country has been set to {country.Country}!");
+                .WithTitle($"Your country has been set to {country.Country} on this guild!");
         }
 
         public static EmbedBuilder CountryRemoved()
         {
             return new EmbedBuilder()
-                .WithTitle("Your country role has been reset.");
+                .WithTitle("Your country role has been reset on this guild.");
         }
 
         public static EmbedBuilder NotInDms()
@@ -44,6 +44,12 @@ namespace CountryBot.Embeds
             return new EmbedBuilder()
                 .WithTitle("Don't do the commands here!")
                 .WithDescription("These commands are guild specific, so the command has to be done in the guild you want to set or remove the role on.");
+        }
+
+        public static EmbedBuilder NotInCountry()
+        {
+            return new EmbedBuilder()
+                .WithTitle("You are not in a country role on this guild.");
         }
     }
 }
