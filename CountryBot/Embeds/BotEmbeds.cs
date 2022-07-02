@@ -81,7 +81,8 @@ internal static class BotEmbeds
     {
         return new EmbedBuilder()
             .WithTitle("Purge Completed!")
-            .WithDescription("All of the roles created by the CountryBot have been removed.");
+            .WithDescription("All of the roles created by the CountryBot have been removed.")
+            .WithColor(new Color(0x3BA55D));
 
     }
 
@@ -89,6 +90,23 @@ internal static class BotEmbeds
     {
         return new EmbedBuilder()
             .WithTitle("Role Limit Reached!")
-            .WithDescription("We can't create any more roles in this server as it has reached it's role limit.");
+            .WithDescription("We can't create any more roles in this server as it has reached it's role limit.")
+            .WithColor(new Color(0xFAA81A));
+    }
+
+    public static EmbedBuilder FlagChangeComplete(bool enableFlags)
+    {
+        return new EmbedBuilder()
+            .WithTitle("Set Flag Role Icons")
+            .WithDescription(enableFlags ? "Role Icons have been enabled for this guild." : "Role Icons have been disabled for this guild.")
+            .WithColor(new Color(0x3BA55D));
+    }
+
+    public static object FlagChangeFailed()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Set Flag Role Icons")
+            .WithDescription("Role Icons can't be set for your server as it has not yet reached Tier 2")
+            .WithColor(new Color(0xFAA81A));
     }
 }

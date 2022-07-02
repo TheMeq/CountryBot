@@ -102,26 +102,29 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         else
         {
             var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false, RequestOptions.Default);
-            try
+            if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
             {
-                var areFlagsDisabledForThisGuild = MySqlUtility.GetFlagsDisabledForThisGuild(guildId);
-                if (!areFlagsDisabledForThisGuild)
+                try
                 {
-                    Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
-                    await createdRole.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
-                    Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                    if (!MySqlUtility.GetFlagsDisabledForThisGuild(guildId))
+                    {
+                        Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
+                        await createdRole.ModifyAsync(x =>
+                            x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
+                        Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    Console.WriteLine($"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine($"Cannot add Emoji for {getCountry.Country}");
+                    Console.WriteLine(exception);
                 }
             }
-            catch (InvalidOperationException)
-            {
-                Console.WriteLine($"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine($"Cannot add Emoji for {getCountry.Country}");
-                Console.WriteLine(exception);
-            }
-            
+
             var socketGuildUser = (SocketGuildUser) Context.User;
             await socketGuildUser.AddRoleAsync(createdRole.Id);
             MySqlUtility.AddRole(guildId, createdRole.Id, getCountry.Id);
