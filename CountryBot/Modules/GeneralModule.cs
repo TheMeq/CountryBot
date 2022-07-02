@@ -6,7 +6,6 @@ using Discord.Interactions;
 using System.Threading.Tasks;
 using CountryBot.Embeds;
 using Discord.WebSocket;
-using CountryBot.Models;
 
 namespace CountryBot.Modules;
 
@@ -100,7 +99,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 await role.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{country.Alpha2.ToLower()}:"));
                 Console.WriteLine($"Added Emoji for {country.Country}");
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
                 Console.WriteLine($"Cannot add Emoji for {country.Country} on this guild as it is not boosted.");
             }
