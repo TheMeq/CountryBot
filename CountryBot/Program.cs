@@ -49,9 +49,8 @@ private async Task MainAsync()
                                      GuildEmojis |
                                      GuildMessages |
                                      GuildMessageReactions |
-                                     DirectMessages |
-                                     RoleIcons,
-                    AlwaysDownloadUsers = true
+                                     DirectMessages,
+                                     AlwaysDownloadUsers = true
                 }))
                 .AddTransient<ConsoleLogger>()
                 .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
