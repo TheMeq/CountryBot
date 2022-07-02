@@ -103,7 +103,7 @@ internal static class MySqlUtility
         var alpha2Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha2 like @Country", arguments).ConvertToList<CountryModel>();
         var alpha3Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha3 like @Country", arguments).ConvertToList<CountryModel>();
 
-        var results = countryResults.Union(alpha2Results).Union(alpha3Results).ToList();
+        var results = countryResults.Union(alpha2Results).Union(alpha3Results).DistinctBy(countryModel => countryModel.Country).ToList();
         return results;
 
     }
@@ -116,7 +116,7 @@ internal static class MySqlUtility
         };
         var alpha2Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha2 = @Country", arguments).ConvertToList<CountryModel>();
         var alpha3Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha3 = @Country", arguments).ConvertToList<CountryModel>();
-        var results = alpha2Results.Union(alpha3Results).ToList();
+        var results = alpha2Results.Union(alpha3Results).DistinctBy(countryModel => countryModel.Country).ToList();
         return results.Count == 1;
     }
 
@@ -128,7 +128,7 @@ internal static class MySqlUtility
         };
         var alpha2Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha2 = @Country", arguments).ConvertToList<CountryModel>();
         var alpha3Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha3 = @Country", arguments).ConvertToList<CountryModel>();
-        var results = alpha2Results.Union(alpha3Results).ToList();
+        var results = alpha2Results.Union(alpha3Results).DistinctBy(countryModel => countryModel.Country).ToList();
         return results[0];
     }
 

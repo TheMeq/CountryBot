@@ -31,7 +31,16 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Log($"Search for {searchQuery}");
         var searchResult = MySqlUtility.Search(searchQuery);
-        var searchEmbed = BotEmbeds.SearchResults(searchResult, searchQuery);
+        EmbedBuilder searchEmbed;
+        if (searchResult.Count == 0)
+        {
+            searchEmbed = BotEmbeds.NoSearchResults(searchQuery);
+        }
+        else
+        {
+            searchEmbed = BotEmbeds.SearchResults(searchResult, searchQuery);
+        }
+
         await RespondAsync(embed: searchEmbed.Build(), ephemeral: true);
     }
 

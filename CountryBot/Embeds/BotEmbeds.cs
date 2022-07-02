@@ -10,7 +10,7 @@ namespace CountryBot.Embeds
         public static EmbedBuilder SearchResults(IEnumerable<CountryModel> listOfCountries, string searchQuery)
         {
             return new EmbedBuilder()
-                .WithTitle($"Search Results for {searchQuery}")
+                .WithTitle($"Search Results for '{searchQuery}'.")
                 .WithDescription(listOfCountries
                     .Aggregate(string.Empty,
                         (current, country) => 
@@ -50,6 +50,13 @@ namespace CountryBot.Embeds
         {
             return new EmbedBuilder()
                 .WithTitle("You are not in a country role on this guild.");
+        }
+
+        public static EmbedBuilder NoSearchResults(string searchQuery)
+        {
+            return new EmbedBuilder()
+                .WithTitle($"Search Results for '{searchQuery}'.")
+                .WithDescription("No Results Found.");
         }
     }
 }
