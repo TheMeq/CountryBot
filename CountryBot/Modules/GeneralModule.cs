@@ -83,7 +83,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             var role = await Context.Guild.CreateRoleAsync($"{country.Country}", null, null, false, false, RequestOptions.Default);
             try
             {
-                await role.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{country.Alpha2}:"));
+                Console.WriteLine($"Attempting to set Emoji to ':flag_{country.Alpha2.ToLower()}:'");
+                await role.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{country.Alpha2.ToLower()}:"));
                 Console.WriteLine($"Added Emoji for {country.Country}");
             }
             catch (Exception e)
