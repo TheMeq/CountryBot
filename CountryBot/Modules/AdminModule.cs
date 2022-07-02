@@ -78,7 +78,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             {
                 if (enableFlags)
                 {
-                    await Log($"Updating '{roleInGuild.Id}' in {Context.Guild.Name}...");
+                    await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to add icons...");
                     var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
                     await Context.Guild.GetRole(roleInGuild.RoleId).ModifyAsync(x =>
                         x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
@@ -86,7 +86,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
                 }
                 else
                 {
-                    await Log($"Deleting '{roleInGuild.Id}' in {Context.Guild.Name}...");
+                    await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to remove icons...");
                     await Context.Guild.GetRole(roleInGuild.RoleId)
                         .ModifyAsync(x => x.Emoji = null);
                 }
