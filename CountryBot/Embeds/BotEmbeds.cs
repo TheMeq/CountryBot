@@ -64,5 +64,16 @@ internal static class BotEmbeds
             .WithTitle($"Search Results for '{searchQuery}'.")
             .WithDescription("No Results Found.")
             .WithColor(new Color(0xFAA81A));            
-    }    
+    }
+
+    public static EmbedBuilder Help()
+    {
+        return new EmbedBuilder()
+            .WithTitle("CountryBot Help")
+            .WithDescription("These are the commands you can use:")
+            .AddField("/search <country>", "Search for your country code.")
+            .AddField("/set <country code>", "Sets your country role to the country with the given country code.")
+            .AddField("/remove", "Removes your country role from this guild.")
+            .WithColor(new Color(0x3BA55D));
+    }
 }

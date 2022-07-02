@@ -174,5 +174,12 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var userCount = MySqlUtility.UserCount();
         await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
+
+    [SlashCommand("help", "View help information about this bot.")]
+    public async Task Help()
+    {
+        var helpEmbed = BotEmbeds.Help();
+        await RespondAsync(embed: helpEmbed.Build(), ephemeral: true);
+    }
 }
 
