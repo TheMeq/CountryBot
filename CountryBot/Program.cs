@@ -49,7 +49,8 @@ private async Task MainAsync()
                                      GuildEmojis |
                                      GuildMessages |
                                      GuildMessageReactions |
-                                     DirectMessages,
+                                     DirectMessages |
+                                     RoleIcons,
                     AlwaysDownloadUsers = true
                 }))
                 .AddTransient<ConsoleLogger>()
