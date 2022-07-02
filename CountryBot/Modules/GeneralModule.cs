@@ -1,4 +1,5 @@
-﻿using CountryBot.Logger;
+﻿using System;
+using CountryBot.Logger;
 using CountryBot.Utilities;
 using Discord;
 using Discord.Interactions;
@@ -79,8 +80,17 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         }
         else
         {
-            var role = await Context.Guild.CreateRoleAsync($"{country.Country}", null, null, false, false,
-                RequestOptions.Default);
+            var role = await Context.Guild.CreateRoleAsync($"{country.Country}", null, null, false, false, RequestOptions.Default);
+            try
+            {
+                await role.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{country.Alpha2}:"));
+                Console.WriteLine($"Added Emoji for {country.Country}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Cannot add Emoji for {country.Country}");
+            }
+            
             var user = (SocketGuildUser) Context.User;
             await user.AddRoleAsync(role.Id);
             MySqlUtility.AddRole(guildId, role.Id, country.Id);
