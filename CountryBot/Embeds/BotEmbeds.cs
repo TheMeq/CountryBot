@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using CountryBot.Models;
 using Discord;
 
@@ -57,5 +58,12 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle($"Search Results for '{searchQuery}'.")
             .WithDescription("No Results Found.");
+    }
+
+    public static EmbedBuilder SetGlobalColour(this EmbedBuilder inputEmbedBuilder)
+    {
+        
+        return inputEmbedBuilder
+            .WithColor(new Color(0x3BA55D));
     }
 }
