@@ -31,16 +31,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Log($"Search for {searchQuery}");
         var searchResult = MySqlUtility.Search(searchQuery);
-        EmbedBuilder searchEmbed;
-        if (searchResult.Count == 0)
-        {
-            searchEmbed = BotEmbeds.NoSearchResults(searchQuery);
-        }
-        else
-        {
-            searchEmbed = BotEmbeds.SearchResults(searchResult, searchQuery);
-        }
-
+        var searchEmbed = searchResult.Count == 0 ? BotEmbeds.NoSearchResults(searchQuery) : BotEmbeds.SearchResults(searchResult, searchQuery);
         await RespondAsync(embed: searchEmbed.Build(), ephemeral: true);
     }
 
@@ -113,9 +104,13 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false, RequestOptions.Default);
             try
             {
-                Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
-                await createdRole.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
-                Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                var areFlagsDisabledForThisGuild = MySqlUtility.GetFlagsDisabledForThisGuild(guildId);
+                if (!areFlagsDisabledForThisGuild)
+                {
+                    Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
+                    await createdRole.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
+                    Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                }
             }
             catch (InvalidOperationException)
             {

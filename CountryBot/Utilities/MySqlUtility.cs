@@ -95,7 +95,7 @@ internal static class MySqlUtility
 
     internal static List<CountryModel> Search(string country)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"Country", "%" + country + "%"},
         };
@@ -116,7 +116,7 @@ internal static class MySqlUtility
 
     public static bool IsValidCountryCode(string countryCode)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"Country", countryCode},
         };
@@ -128,7 +128,7 @@ internal static class MySqlUtility
 
     public static CountryModel GetCountry(string countryCode)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"Country", countryCode},
         };
@@ -140,7 +140,7 @@ internal static class MySqlUtility
 
     public static bool IsUserInRoleAlready(ulong guildId, ulong userId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"UserId", userId},
             {"GuildId", guildId}
@@ -151,7 +151,7 @@ internal static class MySqlUtility
 
     public static UserModel GetUser(ulong guildId, ulong userId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"UserId", userId},
             {"GuildId", guildId}
@@ -162,7 +162,7 @@ internal static class MySqlUtility
 
     public static void RemoveUser(ulong guildId, ulong userId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"UserId", userId},
             {"GuildId", guildId}
@@ -172,7 +172,7 @@ internal static class MySqlUtility
 
     public static bool DoesRoleContainUsers(ulong guildId, int countryId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"countryId", countryId},
             {"GuildId", guildId}
@@ -184,7 +184,7 @@ internal static class MySqlUtility
 
     public static RoleModel GetRole(ulong guildId, int countryId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"countryId", countryId},
             {"GuildId", guildId}
@@ -195,7 +195,7 @@ internal static class MySqlUtility
 
     public static void RemoveRole(ulong guildId, ulong roleInfoRoleId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"RoleId", roleInfoRoleId},
             {"GuildId", guildId}
@@ -205,7 +205,7 @@ internal static class MySqlUtility
 
     public static bool DoesRoleExist(ulong guildId, int countryId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"CountryId", countryId},
             {"GuildId", guildId}
@@ -217,7 +217,7 @@ internal static class MySqlUtility
 
     public static void AddUser(ulong guildId, ulong userId, int countryId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"UserId", userId},
             {"GuildId", guildId},
@@ -228,7 +228,7 @@ internal static class MySqlUtility
 
     public static void AddRole(ulong guildId, ulong roleId, int countryId)
     {
-        var arguments = new Dictionary<string, object>()
+        var arguments = new Dictionary<string, object>
         {
             {"RoleId", roleId},
             {"GuildId", guildId},
@@ -268,5 +268,34 @@ internal static class MySqlUtility
             {"GuildId", guildId}
         };
         DoNonQuery("DELETE FROM users WHERE GuildId = @GuildId", arguments);
+    }
+
+    public static CountryModel GetCountryById(ulong id)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"Id", id},
+        };
+        var results = DoQuery("SELECT * FROM valid_countries WHERE Id = @Id", arguments).ConvertToList<CountryModel>();
+        return results[0];
+    }
+
+    public static void SetGuildFlag(ulong guildId, int flagsEnabled)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId},
+            {"FlagsEnabled", flagsEnabled}
+        };
+        DoNonQuery("INSERT INTO guilds (GuildId, FlagsEnabled) VALUES (@GuildId, @FlagsEnabled) ON DUPLICATE KEY UPDATE FlagsEnabled = @FlagsEnabled", arguments);
+    }
+
+    public static bool GetFlagsDisabledForThisGuild(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        return DoQuery("SELECT * FROM guilds WHERE GuildId = @GuildId and FlagsEnabled = 0", arguments).HasRows();
     }
 }
