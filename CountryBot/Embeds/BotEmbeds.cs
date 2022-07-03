@@ -7,6 +7,10 @@ namespace CountryBot.Embeds;
 
 internal static class BotEmbeds
 {
+    private static readonly Color DiscordGreen = new(59, 165, 93);
+    private static readonly Color DiscordYellow = new(250, 168, 26);
+    private static readonly Color DiscordRed = new(237, 66, 59);
+    
     public static EmbedBuilder SearchResults(IEnumerable<CountryModel> listOfCountries, string searchQuery)
     {
         return new EmbedBuilder()
@@ -15,7 +19,7 @@ internal static class BotEmbeds
                 .Aggregate(string.Empty,
                     (current, country) => 
                         current + $"{country.Country} - {country.Alpha2} or {country.Alpha3}\r\n"))
-            .WithColor(new Color(0x3BA55D));
+            .WithColor(DiscordGreen);
     }
 
     public static EmbedBuilder InvalidCountryCode(CountryModel tryThis = null)
@@ -26,21 +30,21 @@ internal static class BotEmbeds
                 tryThis == null 
                     ? null 
                     : $"Did you mean: ``/set {tryThis.Alpha2}`` for {tryThis.Country}?")
-            .WithColor(new Color(0xED4245));
+            .WithColor(DiscordRed);
     }
 
     public static EmbedBuilder CountrySet(CountryModel country)
     {
         return new EmbedBuilder()
             .WithTitle($"Your country has been set to {country.Country} on this guild!")
-            .WithColor(new Color(0x3BA55D));
+            .WithColor(DiscordGreen);
     }
 
     public static EmbedBuilder CountryRemoved()
     {
         return new EmbedBuilder()
             .WithTitle("Your country role has been removed on this guild.")
-            .WithColor(new Color(0x3BA55D));
+            .WithColor(DiscordGreen);
     }
 
     public static EmbedBuilder NotInDms()
@@ -48,14 +52,14 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("Don't do the commands here!")
             .WithDescription("These commands are guild specific, so the command has to be done in the guild you want to set or remove the role on.")
-            .WithColor(new Color(0xED4245));
+            .WithColor(DiscordRed);
     }
 
     public static EmbedBuilder NotInCountry()
     {
         return new EmbedBuilder()
             .WithTitle("You are not in a country role on this guild.")
-            .WithColor(new Color(0xFAA81A));
+            .WithColor(DiscordYellow);
     }
 
     public static EmbedBuilder NoSearchResults(string searchQuery)
@@ -63,7 +67,7 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle($"Search Results for '{searchQuery}'.")
             .WithDescription("No Results Found.")
-            .WithColor(new Color(0xFAA81A));            
+            .WithColor(DiscordRed);            
     }
 
     public static EmbedBuilder Help()
@@ -74,7 +78,7 @@ internal static class BotEmbeds
             .AddField("/search <country>", "Search for your country code.")
             .AddField("/set <country code>", "Sets your country role to the country with the given country code.")
             .AddField("/remove", "Removes your country role from this guild.")
-            .WithColor(new Color(0x3BA55D));
+            .WithColor(DiscordYellow);
     }
 
     public static EmbedBuilder PurgeComplete()
@@ -82,7 +86,7 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("Purge Completed!")
             .WithDescription("All of the roles created by the CountryBot have been removed.")
-            .WithColor(new Color(0x3BA55D));
+            .WithColor(DiscordGreen);
 
     }
 
@@ -91,7 +95,7 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("Role Limit Reached!")
             .WithDescription("We can't create any more roles in this server as it has reached it's role limit.")
-            .WithColor(new Color(0xFAA81A));
+            .WithColor(DiscordRed);
     }
 
     public static EmbedBuilder FlagChangeComplete(bool enableFlags)
@@ -99,7 +103,7 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("Set Flag Role Icons")
             .WithDescription(enableFlags ? "Role Icons have been enabled for this guild." : "Role Icons have been disabled for this guild.")
-            .WithColor(new Color(0x3BA55D));
+            .WithColor(DiscordGreen);
     }
 
     public static EmbedBuilder FlagChangeFailed()
@@ -107,6 +111,6 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("Set Flag Role Icons")
             .WithDescription("Role Icons can't be set for your server as it has not yet reached Tier 2")
-            .WithColor(new Color(0xFAA81A));
+            .WithColor(DiscordYellow);
     }
 }
