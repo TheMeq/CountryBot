@@ -7,7 +7,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using CountryBot.Logger;
 using CountryBot.Utilities;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using static Discord.GatewayIntents;
@@ -31,16 +30,9 @@ internal class Program
 
     private async Task MainAsync()
     {
-        var config = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-
-            .Build();
-
         using var host = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
                 services
-                    .AddSingleton(config)
                     .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
                     {
                         GatewayIntents = Guilds | GuildBans | GuildEmojis | GuildMessages | GuildMessageReactions | DirectMessages, AlwaysDownloadUsers = true
