@@ -188,5 +188,13 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var helpEmbed = BotEmbeds.Help();
         await RespondAsync(embed: helpEmbed.Build(), ephemeral: true);
     }
+
+    [SlashCommand("stats", "Show how many users from around the world use the bot!")]
+    public async Task Stats(bool worldWide = false)
+    {
+        var stats = MySqlUtility.GetStats(Context.Guild.Id, worldWide);
+        var statsEmbed = BotEmbeds.Stats(Context.Guild.Name, stats, worldWide);
+        await RespondAsync(embed: statsEmbed.Build(), ephemeral: true);
+    }
 }
 

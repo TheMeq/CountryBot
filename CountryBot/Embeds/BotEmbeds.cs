@@ -25,7 +25,7 @@ internal static class BotEmbeds
     public static EmbedBuilder InvalidCountryCode(CountryModel tryThis = null)
     {
         return new EmbedBuilder()
-            .WithTitle($"Sorry, that isn't a valid country code.")
+            .WithTitle("Sorry, that isn't a valid country code.")
             .WithDescription(
                 tryThis == null 
                     ? null 
@@ -112,5 +112,15 @@ internal static class BotEmbeds
             .WithTitle("Set Flag Role Icons")
             .WithDescription("Role Icons can't be set for your server as it has not yet reached Tier 2")
             .WithColor(DiscordYellow);
+    }
+
+    public static EmbedBuilder Stats(string guildName, IEnumerable<StatsModel> stats, bool worldWide)
+    {
+        var embedTitle = worldWide ? "Stats across the world!" : $"Stats in {guildName}!";
+        var embedDescription = stats.Aggregate("Here is where most users are from!\r\n\r\n", (current, stat) => current + $":flag_{stat.Alpha2.ToLower()}: {stat.Country} - {stat.Result} users!\r\n");
+        return new EmbedBuilder()
+            .WithTitle(embedTitle)
+            .WithDescription(embedDescription)
+            .WithColor(DiscordGreen);
     }
 }

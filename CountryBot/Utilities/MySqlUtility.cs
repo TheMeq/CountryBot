@@ -87,8 +87,8 @@ internal static class MySqlUtility
         command.ExecuteNonQuery();
         connection.CloseAsync();
     }
-    
-    public static bool HasRows(this DataTable input)
+
+    private static bool HasRows(this DataTable input)
     {
         return input.Rows.Count > 0;
     }
@@ -297,5 +297,21 @@ internal static class MySqlUtility
             {"GuildId", guildId}
         };
         return DoQuery("SELECT * FROM guilds WHERE GuildId = @GuildId and FlagsEnabled = 0", arguments).HasRows();
+    }
+
+    public static IEnumerable<StatsModel> GetStats(ulong guildId, bool worldWide)
+    {
+        var worldWideText = worldWide ? "" : "WHERE GuildId = @GuildId ";
+        var query = "SELECT v.Country,v.Alpha2, COUNT(*) AS 'Result' FROM users u " +
+                        "JOIN valid_countries v ON v.Id = u.CountryId " +
+                        $"{worldWideText}" +
+                        "GROUP BY CountryId ORDER BY 3 DESC";
+
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        var results = DoQuery(query, arguments).ConvertToList<StatsModel>();
+        return results.GetRange(0, 10);
     }
 }
