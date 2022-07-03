@@ -1,0 +1,14 @@
+{
+  "discordmodel": {
+    "token": "#",
+    "guildid": 0,
+    "testguildid": 0
+  },
+  "mysqlmodel": {
+    "server": "#",
+    "database": "#",
+    "username": "#",
+    "password": "#",
+    "charset": "utf8mb4"
+  }
+}
