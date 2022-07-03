@@ -110,7 +110,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     {
                         Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
                         await createdRole.ModifyAsync(x =>
-                            x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"));
+                            x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
                         Console.WriteLine($"Added Emoji for {getCountry.Country}");
                     }
                 }
