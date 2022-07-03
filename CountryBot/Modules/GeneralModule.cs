@@ -29,7 +29,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("search", "Search for your country code.")]
     public async Task Search(string searchQuery)
     {
-        await Log($"Search for {searchQuery}");
+        await Log($"{Context.User.Username} used the Search command in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Parameter {searchQuery}");
         var searchResult = MySqlUtility.Search(searchQuery);
         var searchEmbed = searchResult.Count == 0 ? BotEmbeds.NoSearchResults(searchQuery) : BotEmbeds.SearchResults(searchResult, searchQuery);
         await RespondAsync(embed: searchEmbed.Build(), ephemeral: true);
@@ -52,16 +53,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        var roleCount = Context.Guild.Roles.Count;
-        if (roleCount >= 249)
-        {
-            await Log($"Tried to create a role in {Context.Guild.Name} but it has reached the Role count limit.");
-            var roleCapReachedEmbed = BotEmbeds.RoleCapReached();
-            await RespondAsync(embed: roleCapReachedEmbed.Build());
-            return;
-        }
-
-        await Log($"Set {Context.User.Username} to {countryCode} in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Set command in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Parameter {countryCode}");
 
         var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);
         if (!isValidCountryCode)
@@ -101,6 +94,15 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         }
         else
         {
+            var roleCount = Context.Guild.Roles.Count;
+            if (roleCount >= 249)
+            {
+                await Log($"Tried to create a role in {Context.Guild.Name} but it has reached the Role count limit.");
+                var roleCapReachedEmbed = BotEmbeds.RoleCapReached();
+                await RespondAsync(embed: roleCapReachedEmbed.Build());
+                return;
+            }
+
             var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false, RequestOptions.Default);
             if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
             {
@@ -140,6 +142,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("remove", "Remove your currently set country.")]
     public async Task Remove()
     {
+        
         ulong guildId;
         try
         {
@@ -152,7 +155,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(embed: invalidGuildEmbed.Build());
             return;
         }
-        await Log($"Remove {Context.User.Username} in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Remove command in {Context.Guild.Name}");
         var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
         if (isUserInRoleAlready)
         {
@@ -185,6 +188,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("help", "View help information about this bot.")]
     public async Task Help()
     {
+        await Log($"{Context.User.Username} used the Help command in {Context.Guild.Name}");
         var helpEmbed = BotEmbeds.Help();
         await RespondAsync(embed: helpEmbed.Build(), ephemeral: true);
     }
@@ -192,6 +196,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("stats", "Show how many users from around the world use the bot!")]
     public async Task Stats(bool worldWide = false)
     {
+        await Log($"{Context.User.Username} used the Stats command in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Parameter {worldWide}");
         var stats = MySqlUtility.GetStats(Context.Guild.Id, worldWide);
         var statsEmbed = BotEmbeds.Stats(Context.Guild.Name, stats, worldWide);
         await RespondAsync(embed: statsEmbed.Build(), ephemeral: true);
