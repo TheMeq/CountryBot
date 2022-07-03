@@ -26,6 +26,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("purge", "Removes all the roles and data created by the bot from your server.")]
     public async Task Purge()
     {
+        await Log($"{Context.User.Username} used the Purge command in {Context.Guild.Name}");
         await DeferAsync(ephemeral: true);
         ulong guildId;
         try
@@ -57,6 +58,8 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     //[SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
     //public async Task Flags(bool enableFlags)
     //{
+    //    await Log($"{Context.User.Username} used the Flags command in {Context.Guild.Name}");
+    //    await Log($"{Context.User.Username} used the Parameter {enableFlags}");
     //    await DeferAsync(ephemeral: true);
     //    if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
     //    {
