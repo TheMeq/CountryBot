@@ -312,6 +312,6 @@ internal static class MySqlUtility
             {"GuildId", guildId}
         };
         var results = DoQuery(query, arguments).ConvertToList<StatsModel>();
-        return results.GetRange(0, 10);
+        return results.GetRange(0, results.Count < 10 ? results.Count : 10);
     }
 }
