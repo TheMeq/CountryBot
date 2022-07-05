@@ -68,75 +68,88 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
         var getCountry = MySqlUtility.GetCountry(countryCode);
 
-        var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
-        if (isUserInRoleAlready)
+        try
         {
-            var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
-            var socketGuildUser = (SocketGuildUser) Context.User;
-            var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
-            await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
-            MySqlUtility.RemoveUser(guildId, Context.User.Id);
-
-            var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
-            if (!doesRoleContainUsers)
+            var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
+            if (isUserInRoleAlready)
             {
-                await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
-                MySqlUtility.RemoveRole(guildId, getRole.RoleId);
-            }
-        }
+                var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
+                var socketGuildUser = (SocketGuildUser) Context.User;
+                var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
+                await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
+                MySqlUtility.RemoveUser(guildId, Context.User.Id);
 
-        var doesRoleExist = MySqlUtility.DoesRoleExist(guildId, getCountry.Id);
-        if (doesRoleExist)
-        {
-            var getRole = MySqlUtility.GetRole(guildId, getCountry.Id);
-            var socketGuildUser = (SocketGuildUser) Context.User;
-            await socketGuildUser.AddRoleAsync(getRole.RoleId);
-        }
-        else
-        {
-            var roleCount = Context.Guild.Roles.Count;
-            if (roleCount >= 249)
-            {
-                await Log($"Tried to create a role in {Context.Guild.Name} but it has reached the Role count limit.");
-                var roleCapReachedEmbed = BotEmbeds.RoleCapReached();
-                await RespondAsync(embed: roleCapReachedEmbed.Build());
-                return;
-            }
-
-            var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false, RequestOptions.Default);
-            if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
-            {
-                try
+                var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
+                if (!doesRoleContainUsers)
                 {
-                    if (!MySqlUtility.GetFlagsDisabledForThisGuild(guildId))
+                    await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
+                    MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                }
+            }
+
+            var doesRoleExist = MySqlUtility.DoesRoleExist(guildId, getCountry.Id);
+            if (doesRoleExist)
+            {
+                var getRole = MySqlUtility.GetRole(guildId, getCountry.Id);
+                var socketGuildUser = (SocketGuildUser) Context.User;
+                await socketGuildUser.AddRoleAsync(getRole.RoleId);
+            }
+            else
+            {
+                var roleCount = Context.Guild.Roles.Count;
+                if (roleCount >= 249)
+                {
+                    await Log(
+                        $"Tried to create a role in {Context.Guild.Name} but it has reached the Role count limit.");
+                    var roleCapReachedEmbed = BotEmbeds.RoleCapReached();
+                    await RespondAsync(embed: roleCapReachedEmbed.Build());
+                    return;
+                }
+
+                var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false,
+                    RequestOptions.Default);
+                if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
+                {
+                    try
                     {
-                        Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
-                        await createdRole.ModifyAsync(x =>
-                            x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
-                        Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                        if (!MySqlUtility.GetFlagsDisabledForThisGuild(guildId))
+                        {
+                            Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
+                            await createdRole.ModifyAsync(x =>
+                                x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
+                            Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        Console.WriteLine(
+                            $"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine($"Cannot add Emoji for {getCountry.Country}");
+                        Console.WriteLine(exception);
                     }
                 }
-                catch (InvalidOperationException)
-                {
-                    Console.WriteLine($"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
-                }
-                catch (Exception exception)
-                {
-                    Console.WriteLine($"Cannot add Emoji for {getCountry.Country}");
-                    Console.WriteLine(exception);
-                }
+
+                var socketGuildUser = (SocketGuildUser) Context.User;
+                await socketGuildUser.AddRoleAsync(createdRole.Id);
+                MySqlUtility.AddRole(guildId, createdRole.Id, getCountry.Id);
             }
 
-            var socketGuildUser = (SocketGuildUser) Context.User;
-            await socketGuildUser.AddRoleAsync(createdRole.Id);
-            MySqlUtility.AddRole(guildId, createdRole.Id, getCountry.Id);
+            MySqlUtility.AddUser(guildId, Context.User.Id, getCountry.Id);
+            var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
+            await RespondAsync(embed: countrySetEmbed.Build(), ephemeral: true);
         }
-
-        MySqlUtility.AddUser(guildId, Context.User.Id, getCountry.Id);
-        var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
-        await RespondAsync(embed: countrySetEmbed.Build(), ephemeral: true);
+        catch (Discord.Net.HttpException)
+        {
+            await Log($"Unable to set role for {Context.User.Username} to {countryCode} in {Context.Guild.Name}");
+            var errorEmbed = BotEmbeds.MissingPermissions();
+            await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
+        }
+        
         var userCount = MySqlUtility.UserCount();
-        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
+        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);        
     }
 
     [SlashCommand("remove", "Remove your currently set country.")]
@@ -159,20 +172,30 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
         if (isUserInRoleAlready)
         {
-            var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
-            var socketGuildUser = (SocketGuildUser) Context.User;
-            var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
-            await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
-            MySqlUtility.RemoveUser(guildId, Context.User.Id);
-
-            var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
-            if (!doesRoleContainUsers)
+            try
             {
-                await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
-                MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
+                var socketGuildUser = (SocketGuildUser) Context.User;
+                var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
+                await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
+                MySqlUtility.RemoveUser(guildId, Context.User.Id);
+
+                var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
+                if (!doesRoleContainUsers)
+                {
+                    await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
+                    MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                }
+
+                var countryRemovedEmbed = BotEmbeds.CountryRemoved();
+                await RespondAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
             }
-            var countryRemovedEmbed = BotEmbeds.CountryRemoved();
-            await RespondAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
+            catch (Discord.Net.HttpException)
+            {
+                await Log($"Unable to remove role for {Context.User.Username} in {Context.Guild.Name}");
+                var errorEmbed = BotEmbeds.MissingPermissions();
+                await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
+            }
         }
         else
         {

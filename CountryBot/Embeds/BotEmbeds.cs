@@ -123,4 +123,13 @@ internal static class BotEmbeds
             .WithDescription(embedDescription)
             .WithColor(DiscordGreen);
     }
+
+    public static EmbedBuilder MissingPermissions()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Missing Permissions")
+            .WithDescription(
+                "It appears this bot is missing the Manage Roles permission. Pleast contact this guild's Administrator to fix this.")
+            .WithColor(DiscordRed);
+    }
 }
