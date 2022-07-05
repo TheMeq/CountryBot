@@ -78,6 +78,7 @@ internal static class BotEmbeds
             .AddField("/search <country>", "Search for your country code.")
             .AddField("/set <country code>", "Sets your country role to the country with the given country code.")
             .AddField("/remove", "Removes your country role from this guild.")
+            .AddField("/stats <optional:false>","Shows how many people have used the bot, use /stats true to see worldwide statistics.")
             .WithColor(DiscordYellow);
     }
 
