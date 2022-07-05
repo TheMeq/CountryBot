@@ -143,7 +143,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch (Discord.Net.HttpException)
         {
-            await Log($"Unable to set role for {Context.User.Username} to {countryCode} in {Context.Guild.Name}");
+            await Log($"Unable to set role for {Context.User.Username} to {countryCode} in {Context.Guild.Name} - Missing Permissions");
             var errorEmbed = BotEmbeds.MissingPermissions();
             await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
         }
@@ -192,7 +192,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
             catch (Discord.Net.HttpException)
             {
-                await Log($"Unable to remove role for {Context.User.Username} in {Context.Guild.Name}");
+                await Log($"Unable to remove role for {Context.User.Username} in {Context.Guild.Name} - Missing Permissions");
                 var errorEmbed = BotEmbeds.MissingPermissions();
                 await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
             }
