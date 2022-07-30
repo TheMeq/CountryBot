@@ -22,15 +22,18 @@ internal static class BotEmbeds
             .WithColor(DiscordGreen);
     }
 
-    public static EmbedBuilder InvalidCountryCode(CountryModel tryThis = null)
+    public static EmbedBuilder InvalidCountryCode(List<CountryModel> tryThis = null)
     {
-        return new EmbedBuilder()
+        var embed = new EmbedBuilder()
             .WithTitle("Sorry, that isn't a valid country code.")
-            .WithDescription(
-                tryThis == null 
-                    ? null 
-                    : $"Did you mean: ``/set {tryThis.Alpha2}`` for {tryThis.Country}?")
             .WithColor(DiscordRed);
+        if (tryThis == null) return embed;
+        embed.Description = "Did you mean:\r\n";
+        foreach (var country in tryThis)
+        {
+            embed.Description += $"``/set {country.Alpha2}`` for {country.Country}\r\n";
+        }
+        return embed;
     }
 
     public static EmbedBuilder CountrySet(CountryModel country)

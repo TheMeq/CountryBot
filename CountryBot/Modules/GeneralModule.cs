@@ -59,11 +59,18 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);
         if (!isValidCountryCode)
         {
-            await Log($"Unable to set role for {Context.User.Username} to {countryCode} as it is invalid.");
-            var searchResult = MySqlUtility.Search(countryCode).FirstOrDefault();
-            var errorEmbed = searchResult != null ? BotEmbeds.InvalidCountryCode(searchResult) : BotEmbeds.InvalidCountryCode();
-            await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
-            return;
+            var searchResult = MySqlUtility.Search(countryCode);
+            if (searchResult.Count > 1)
+            {
+                await Log($"Unable to set role for {Context.User.Username} to {countryCode} as it is invalid or there is more then 1 match.");
+                var errorEmbed = searchResult.Count >= 2
+                    ? BotEmbeds.InvalidCountryCode(searchResult)
+                    : BotEmbeds.InvalidCountryCode();
+                await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
+                return;
+            }
+            await Log($"Unable to set role for {Context.User.Username} to {countryCode} but have found 1 closest match, using that instead.");
+            countryCode = searchResult.First().Alpha2;
         }
 
         var getCountry = MySqlUtility.GetCountry(countryCode);

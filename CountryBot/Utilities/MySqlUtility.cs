@@ -98,16 +98,19 @@ internal static class MySqlUtility
         var arguments = new Dictionary<string, object>
         {
             {"Country", "%" + country + "%"},
+            {"CountryNoWC", country}
         };
         var countryResults = DoQuery("SELECT * FROM valid_countries WHERE Country like @Country", arguments).ConvertToList<CountryModel>();
         var alternativeNamesResults = DoQuery("SELECT * FROM valid_countries WHERE AlternativeNames like @Country", arguments).ConvertToList<CountryModel>();
         var alpha2Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha2 like @Country", arguments).ConvertToList<CountryModel>();
         var alpha3Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha3 like @Country", arguments).ConvertToList<CountryModel>();
+        var callingCodeResults = DoQuery("SELECT * FROM valid_countries WHERE CallingCode = @CountryNoWC", arguments).ConvertToList<CountryModel>();
 
         var results = countryResults
             .Union(alternativeNamesResults)
             .Union(alpha2Results)
             .Union(alpha3Results)
+            .Union(callingCodeResults)
             .DistinctBy(countryModel => countryModel.Country)
             .ToList();
         return results;
@@ -116,13 +119,17 @@ internal static class MySqlUtility
 
     public static bool IsValidCountryCode(string countryCode)
     {
+        countryCode = countryCode.Replace("+", "");
         var arguments = new Dictionary<string, object>
         {
             {"Country", countryCode},
         };
         var alpha2Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha2 = @Country", arguments).ConvertToList<CountryModel>();
         var alpha3Results = DoQuery("SELECT * FROM valid_countries WHERE Alpha3 = @Country", arguments).ConvertToList<CountryModel>();
-        var results = alpha2Results.Union(alpha3Results).DistinctBy(countryModel => countryModel.Country).ToList();
+        var results = alpha2Results
+            .Union(alpha3Results)
+            .DistinctBy(countryModel => countryModel.Country)
+            .ToList();
         return results.Count == 1;
     }
 

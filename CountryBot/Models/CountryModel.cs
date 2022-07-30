@@ -8,4 +8,5 @@ internal class CountryModel
     public string Alpha2 { get; set; }
     public string Alpha3 { get; set; }
     public string Numeric { get; set; }
+    public int CallingCode { get; set; }
 }
