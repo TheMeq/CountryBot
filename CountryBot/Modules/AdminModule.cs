@@ -55,54 +55,54 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await FollowupAsync(embed: purgeCompleteEmbed.Build(), ephemeral: true);
     }
 
-    //[SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
-    //public async Task Flags(bool enableFlags)
-    //{
-    //    await Log($"{Context.User.Username} used the Flags command in {Context.Guild.Name}");
-    //    await Log($"{Context.User.Username} used the Parameter {enableFlags}");
-    //    await DeferAsync(ephemeral: true);
-    //    if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
-    //    {
-    //        ulong guildId;
-    //        try
-    //        {
-    //            guildId = Context.Guild.Id;
-    //        }
-    //        catch
-    //        {
-    //            await Log($"{Context.User.Username} tried to DM the Bot.");
-    //            var invalidGuildEmbed = BotEmbeds.NotInDms();
-    //            await FollowupAsync(embed: invalidGuildEmbed.Build());
-    //            return;
-    //        }
+    [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
+    public async Task Flags(bool enableFlags)
+    {
+        await Log($"{Context.User.Username} used the Flags command in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Parameter {enableFlags}");
+        await DeferAsync(ephemeral: true);
+        if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
+        {
+            ulong guildId;
+            try
+            {
+                guildId = Context.Guild.Id;
+            }
+            catch
+            {
+                await Log($"{Context.User.Username} tried to DM the Bot.");
+                var invalidGuildEmbed = BotEmbeds.NotInDms();
+                await FollowupAsync(embed: invalidGuildEmbed.Build());
+                return;
+            }
 
-    //        var allRolesForGuild = MySqlUtility.GetAllRolesForGuild(guildId);
-    //        foreach (var roleInGuild in allRolesForGuild)
-    //        {
-    //            if (enableFlags)
-    //            {
-    //                await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to add icons...");
-    //                var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
-    //                var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
-    //                await roleToModify.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
+            var allRolesForGuild = MySqlUtility.GetAllRolesForGuild(guildId);
+            foreach (var roleInGuild in allRolesForGuild)
+            {
+                if (enableFlags)
+                {
+                    await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to add icons...");
+                    var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
+                    var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
+                    await roleToModify.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
 
-    //            }
-    //            else
-    //            {
-    //                await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to remove icons...");
-    //                var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
-    //                await roleToModify.ModifyAsync(x => x.Emoji = null, RequestOptions.Default);
-    //            }
-    //        }
+                }
+                else
+                {
+                    await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to remove icons...");
+                    var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
+                    await roleToModify.ModifyAsync(x => x.Emoji = null, RequestOptions.Default);
+                }
+            }
 
-    //        MySqlUtility.SetGuildFlag(guildId, enableFlags ? 1 : 0);
-    //        var flagChangeCompleteEmbed = BotEmbeds.FlagChangeComplete(enableFlags);
-    //        await FollowupAsync(embed: flagChangeCompleteEmbed.Build(), ephemeral: true);
-    //    }
-    //    else
-    //    {
-    //        var flagChangeFailedEmbed = BotEmbeds.FlagChangeFailed();
-    //        await FollowupAsync(embed: flagChangeFailedEmbed.Build(), ephemeral: true);
-    //    }
-    //}
+            MySqlUtility.SetGuildFlag(guildId, enableFlags ? 1 : 0);
+            var flagChangeCompleteEmbed = BotEmbeds.FlagChangeComplete(enableFlags);
+            await FollowupAsync(embed: flagChangeCompleteEmbed.Build(), ephemeral: true);
+        }
+        else
+        {
+            var flagChangeFailedEmbed = BotEmbeds.FlagChangeFailed();
+            await FollowupAsync(embed: flagChangeFailedEmbed.Build(), ephemeral: true);
+        }
+    }
 }
