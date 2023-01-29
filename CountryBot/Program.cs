@@ -84,14 +84,25 @@ internal class Program
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Build Date: {dateTime}"));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot",
                 $"            ({GeneralUtility.ToReadableString(dateSince)} ago)"));
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is in {_client.Guilds.Count} guilds."));
         };
 
         _client.LeftGuild += async guild =>
         {
+            var log = new ConsoleLogger();
             MySqlUtility.RemoveAllRolesForGuild(guild.Id);
             MySqlUtility.RemoveAllUsersForGuild(guild.Id);
             var userCount = MySqlUtility.UserCount();
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot was removed from guild '{guild.Name}'."));
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is now in {_client.Guilds.Count} guilds."));
             await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
+        };
+
+        _client.JoinedGuild += async guild =>
+        {
+            var log = new ConsoleLogger();
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot was added to guild '{guild.Name}'."));
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is now in {_client.Guilds.Count} guilds."));
         };
 
         await _client.LoginAsync(TokenType.Bot, StaticConfig.DiscordModel.Token);
