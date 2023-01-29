@@ -238,6 +238,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(embed: statsEmbed.Build(), ephemeral: true);
     }
 
+    [RequireUserPermission(ChannelPermission.ManageRoles)]
     [SlashCommand("choose", "Allows you to select your country/region role from a list.")]
     public async Task Choose()
     {
