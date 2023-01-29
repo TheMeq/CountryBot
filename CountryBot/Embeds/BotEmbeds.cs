@@ -39,7 +39,7 @@ internal static class BotEmbeds
     public static EmbedBuilder CountrySet(CountryModel country)
     {
         return new EmbedBuilder()
-            .WithTitle($"Your country has been set to {country.Country} on this guild!")
+            .WithTitle($"Your country/region has been set to {country.Country} on this guild!")
             .WithColor(DiscordGreen);
     }
 
@@ -135,5 +135,21 @@ internal static class BotEmbeds
             .WithDescription(
                 "It appears this bot is missing the Manage Roles permission. Please contact this guild's Administrator to fix this.")
             .WithColor(DiscordRed);
+    }
+
+    public static EmbedBuilder CountrySelector()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Country Bot")
+            .WithDescription(
+                "Please use the drop down below to select which country/region role you would like.");
+    }
+
+    public static EmbedBuilder CountryLetterSelector()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Country Bot")
+            .WithDescription(
+                "Please use the drop down below to select which letter your country/region starts with.");
     }
 }

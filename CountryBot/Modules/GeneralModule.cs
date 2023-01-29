@@ -232,5 +232,63 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var statsEmbed = BotEmbeds.Stats(Context.Guild.Name, stats, worldWide);
         await RespondAsync(embed: statsEmbed.Build(), ephemeral: true);
     }
+
+    [SlashCommand("choose", "Allows you to select your country/region role from a list.")]
+    public async Task Choose()
+    {
+        await Log($"{Context.User.Username} used the Choose command in {Context.Guild.Name}");
+        await DeferAsync();
+        var embed = BotEmbeds.CountryLetterSelector();
+        var component = new ComponentBuilder();
+        var countryList = new SelectMenuBuilder
+        {
+            CustomId = "countryLetterSelector",
+            IsDisabled = false,
+            MinValues = 1,
+            MaxValues = 1,
+            Placeholder = "Select what letter your country/region starts with."
+        };
+        const string countryLetters = "ABCDEFGHIJKLMNOPQRSTUVWYZ";
+        foreach (var letter in countryLetters)
+        {
+            countryList.AddOption(letter.ToString(), letter.ToString(), $"List countries/regions beginning with '{letter}'");
+        }
+
+        component.WithSelectMenu(countryList);
+        await FollowupAsync(embed: embed.Build(), components: component.Build(), ephemeral: true);
+    }
+
+    [ComponentInteraction("countryLetterSelector")]
+    public async Task CountryLetterSelector(string selectedValue)
+    {
+        await Log($"{Context.User.Username} selected {selectedValue} from the Choose command in {Context.Guild.Name}");
+        await DeferAsync();
+        var embed = BotEmbeds.CountrySelector();
+        var component = new ComponentBuilder();
+        var countries = MySqlUtility.GetCountries(selectedValue);
+        var countryList = new SelectMenuBuilder
+        {
+            CustomId = "countrySelector",
+            IsDisabled = false,
+            MinValues = 1,
+            MaxValues = 1,
+            Placeholder = "Select your country/region."
+        };
+        foreach (var country in countries)
+        {
+            countryList.AddOption(country.Country, country.Alpha2, $"Select {country.Country}", Emoji.Parse(":flag_" + country.Alpha2.ToLower() + ":"));
+        }
+
+        component.WithSelectMenu(countryList);
+        await FollowupAsync(embed: embed.Build(), components: component.Build(), ephemeral: true);
+    }
+
+    [ComponentInteraction("countrySelector")]
+    public async Task CountrySelector(string selectedValue)
+    {
+        await Log($"{Context.User.Username} selected {selectedValue} from the Choose command in {Context.Guild.Name}");
+        await Set(selectedValue);
+        
+    }
 }
 

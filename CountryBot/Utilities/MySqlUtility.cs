@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -320,5 +321,19 @@ internal static class MySqlUtility
         };
         var results = DoQuery(query, arguments).ConvertToList<StatsModel>();
         return results.GetRange(0, results.Count < 10 ? results.Count : 10);
+    }
+
+    public static List<CountryModel> GetCountries()
+    {
+        return DoQuery("SELECT * FROM valid_countries").ConvertToList<CountryModel>();
+    }
+
+    public static List<CountryModel> GetCountries(string selectedValue)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"letter", selectedValue + '%'}
+        };
+        return DoQuery("SELECT * FROM valid_countries WHERE Country LIKE @letter OR AlternativeNames LIKE @letter AND Id NOT IN (185,186,189,190,193,201,207,213)", arguments).ConvertToList<CountryModel>();
     }
 }
