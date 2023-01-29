@@ -29,16 +29,18 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("search", "Search for your country code.")]
     public async Task Search(string searchQuery)
     {
+        await DeferAsync();
         await Log($"{Context.User.Username} used the Search command in {Context.Guild.Name}");
         await Log($"{Context.User.Username} used the Parameter {searchQuery}");
         var searchResult = MySqlUtility.Search(searchQuery);
         var searchEmbed = searchResult.Count == 0 ? BotEmbeds.NoSearchResults(searchQuery) : BotEmbeds.SearchResults(searchResult, searchQuery);
-        await RespondAsync(embed: searchEmbed.Build(), ephemeral: true);
+        await FollowupAsync(embed: searchEmbed.Build(), ephemeral: true);
     }
 
     [SlashCommand("set", "Set your country role by specifying the country code.")]
     public async Task Set(string countryCode)
     {
+        await DeferAsync();
         countryCode = countryCode.ToUpper();
         ulong guildId;
         try
@@ -49,7 +51,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         {
             await Log($"{Context.User.Username} tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
-            await RespondAsync(embed: invalidGuildEmbed.Build());
+            await FollowupAsync(embed: invalidGuildEmbed.Build());
             return;
         }
 
@@ -66,7 +68,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var errorEmbed = searchResult.Count >= 2
                     ? BotEmbeds.InvalidCountryCode(searchResult)
                     : BotEmbeds.InvalidCountryCode();
-                await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
+                await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
                 return;
             }
             await Log($"Unable to set role for {Context.User.Username} to {countryCode} but have found 1 closest match, using that instead.");
@@ -113,7 +115,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     await Log(
                         $"Tried to create a role in {Context.Guild.Name} but it has reached the Role count limit.");
                     var roleCapReachedEmbed = BotEmbeds.RoleCapReached();
-                    await RespondAsync(embed: roleCapReachedEmbed.Build());
+                    await FollowupAsync(embed: roleCapReachedEmbed.Build());
                     return;
                 }
 
@@ -151,13 +153,13 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
             MySqlUtility.AddUser(guildId, Context.User.Id, getCountry.Id);
             var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
-            await RespondAsync(embed: countrySetEmbed.Build(), ephemeral: true);
+            await FollowupAsync(embed: countrySetEmbed.Build(), ephemeral: true);
         }
         catch (Discord.Net.HttpException)
         {
             await Log($"Unable to set role for {Context.User.Username} to {countryCode} in {Context.Guild.Name} - Missing Permissions");
             var errorEmbed = BotEmbeds.MissingPermissions();
-            await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
+            await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
         }
         
         var userCount = MySqlUtility.UserCount();
@@ -167,7 +169,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("remove", "Remove your currently set country.")]
     public async Task Remove()
     {
-        
+        await DeferAsync();
         ulong guildId;
         try
         {
@@ -177,7 +179,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         {
             await Log($"{Context.User.Username} tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
-            await RespondAsync(embed: invalidGuildEmbed.Build());
+            await FollowupAsync(embed: invalidGuildEmbed.Build());
             return;
         }
         await Log($"{Context.User.Username} used the Remove command in {Context.Guild.Name}");
@@ -200,19 +202,19 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 }
 
                 var countryRemovedEmbed = BotEmbeds.CountryRemoved();
-                await RespondAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
+                await FollowupAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
             }
             catch (Discord.Net.HttpException)
             {
                 await Log($"Unable to remove role for {Context.User.Username} in {Context.Guild.Name} - Missing Permissions");
                 var errorEmbed = BotEmbeds.MissingPermissions();
-                await RespondAsync(embed: errorEmbed.Build(), ephemeral: true);
+                await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
             }
         }
         else
         {
             var notInCountryEmbed = BotEmbeds.NotInCountry();
-            await RespondAsync(embed: notInCountryEmbed.Build(), ephemeral: true);
+            await FollowupAsync(embed: notInCountryEmbed.Build(), ephemeral: true);
         }
         
         
@@ -223,19 +225,21 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("help", "View help information about this bot.")]
     public async Task Help()
     {
+        await DeferAsync();
         await Log($"{Context.User.Username} used the Help command in {Context.Guild.Name}");
         var helpEmbed = BotEmbeds.Help();
-        await RespondAsync(embed: helpEmbed.Build(), ephemeral: true);
+        await FollowupAsync(embed: helpEmbed.Build(), ephemeral: true);
     }
 
     [SlashCommand("stats", "Show how many users from around the world use the bot!")]
     public async Task Stats(bool worldWide = false)
     {
+        await DeferAsync();
         await Log($"{Context.User.Username} used the Stats command in {Context.Guild.Name}");
         await Log($"{Context.User.Username} used the Parameter {worldWide}");
         var stats = MySqlUtility.GetStats(Context.Guild.Id, worldWide);
         var statsEmbed = BotEmbeds.Stats(Context.Guild.Name, stats, worldWide);
-        await RespondAsync(embed: statsEmbed.Build(), ephemeral: true);
+        await FollowupAsync(embed: statsEmbed.Build(), ephemeral: true);
     }
 
     [RequireUserPermission(ChannelPermission.ManageRoles)]
