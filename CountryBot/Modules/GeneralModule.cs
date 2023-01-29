@@ -71,6 +71,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
             await Log($"Unable to set role for {Context.User.Username} to {countryCode} but have found 1 closest match, using that instead.");
             countryCode = searchResult.First().Alpha2;
+            await Log($"{Context.User.Username} used the Parameter {countryCode}");
         }
 
         var getCountry = MySqlUtility.GetCountry(countryCode);
@@ -80,6 +81,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
             if (isUserInRoleAlready)
             {
+                await Log($"{Context.User.Username} is already in a role. Removing current role from user...");
                 var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
                 var socketGuildUser = (SocketGuildUser) Context.User;
                 var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
@@ -89,6 +91,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
                 if (!doesRoleContainUsers)
                 {
+                    await Log($"Removing unused role from {Context.Guild.Name}...");
                     await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
                     MySqlUtility.RemoveRole(guildId, getRole.RoleId);
                 }
@@ -103,6 +106,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
             else
             {
+                await Log($"Adding new role to {Context.Guild.Name}...");
                 var roleCount = Context.Guild.Roles.Count;
                 if (roleCount >= 249)
                 {
@@ -115,26 +119,27 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
                 var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false,
                     RequestOptions.Default);
+                await Log($"Created role {createdRole.Name} in {Context.Guild.Name}");
                 if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
                 {
                     try
                     {
                         if (!MySqlUtility.GetFlagsDisabledForThisGuild(guildId))
                         {
-                            Console.WriteLine($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
+                            await Log($"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
                             await createdRole.ModifyAsync(x =>
                                 x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
-                            Console.WriteLine($"Added Emoji for {getCountry.Country}");
+                            await Log($"Added Emoji for {getCountry.Country}");
                         }
                     }
                     catch (InvalidOperationException)
                     {
-                        Console.WriteLine(
+                        await Log(
                             $"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
                     }
                     catch (Exception exception)
                     {
-                        Console.WriteLine($"Cannot add Emoji for {getCountry.Country}");
+                        await Log($"Cannot add Emoji for {getCountry.Country}");
                         Console.WriteLine(exception);
                     }
                 }

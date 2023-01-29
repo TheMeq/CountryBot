@@ -25,7 +25,7 @@ internal static class BotEmbeds
     public static EmbedBuilder InvalidCountryCode(List<CountryModel> tryThis = null)
     {
         var embed = new EmbedBuilder()
-            .WithTitle("Sorry, that isn't a valid country code.")
+            .WithTitle("Sorry, that isn't a valid country/region code.")
             .WithColor(DiscordRed);
         if (tryThis == null) return embed;
         embed.Description = "Did you mean:\r\n";
@@ -46,7 +46,7 @@ internal static class BotEmbeds
     public static EmbedBuilder CountryRemoved()
     {
         return new EmbedBuilder()
-            .WithTitle("Your country role has been removed on this guild.")
+            .WithTitle("Your country/region role has been removed on this guild.")
             .WithColor(DiscordGreen);
     }
 
@@ -61,7 +61,7 @@ internal static class BotEmbeds
     public static EmbedBuilder NotInCountry()
     {
         return new EmbedBuilder()
-            .WithTitle("You are not in a country role on this guild.")
+            .WithTitle("You are not in a country/region role on this guild.")
             .WithColor(DiscordYellow);
     }
 
@@ -78,9 +78,10 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("CountryBot Help")
             .WithDescription("These are the commands you can use:")
-            .AddField("/search <country>", "Search for your country code.")
-            .AddField("/set <country code>", "Sets your country role to the country with the given country code.")
-            .AddField("/remove", "Removes your country role from this guild.")
+            .AddField("/choose", "Provides a permanent drop down menu for users to select countries/regions.")
+            .AddField("/search <country>", "Search for your country/region code.")
+            .AddField("/set <country code>", "Sets your country/region role to the country/region with the given country/region code.")
+            .AddField("/remove", "Removes your country/region role from this guild.")
             .AddField("/stats <optional:false>","Shows how many people have used the bot, use /stats true to see worldwide statistics.")
             .WithColor(DiscordYellow);
     }
@@ -140,7 +141,7 @@ internal static class BotEmbeds
     public static EmbedBuilder CountrySelector()
     {
         return new EmbedBuilder()
-            .WithTitle("Country Bot")
+            .WithTitle("CountryBot")
             .WithDescription(
                 "Please use the drop down below to select which country/region role you would like.");
     }
@@ -148,7 +149,7 @@ internal static class BotEmbeds
     public static EmbedBuilder CountryLetterSelector()
     {
         return new EmbedBuilder()
-            .WithTitle("Country Bot")
+            .WithTitle("CountryBot")
             .WithDescription(
                 "Please use the drop down below to select which letter your country/region starts with.");
     }
