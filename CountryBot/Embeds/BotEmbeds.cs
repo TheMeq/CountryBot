@@ -153,4 +153,11 @@ internal static class BotEmbeds
             .WithDescription(
                 "Please use the drop down below to select which letter your country/region starts with.");
     }
+
+    public static EmbedBuilder AlreadyInCountryCode(CountryModel country)
+    {
+        return new EmbedBuilder()
+            .WithTitle($"Your country/region is already set to {country.Country} on this guild!")
+            .WithColor(DiscordYellow);
+    }
 }
