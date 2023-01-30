@@ -25,7 +25,8 @@ internal static class BotEmbeds
     public static EmbedBuilder InvalidCountryCode(List<CountryModel> tryThis = null)
     {
         var embed = new EmbedBuilder()
-            .WithTitle("Sorry, that isn't a valid country/region code.")
+            .WithTitle("CountryBot")
+            .WithDescription("Sorry, that isn't a valid country/region code. Use the `/search` feature to find your country/region.")
             .WithColor(DiscordRed);
         if (tryThis == null) return embed;
         embed.Description = "Did you mean:\r\n";

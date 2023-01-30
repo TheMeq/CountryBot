@@ -72,9 +72,20 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
                 return;
             }
+
+            if (searchResult.Count == 0)
+            {
+                await Log("set", "Unable to set role as parameter is invalid.");
+                var errorEmbed = BotEmbeds.InvalidCountryCode();
+                await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
+                return;
+            }
+           
             await Log("set", "Have found 1 closest match, using that instead.");
             countryCode = searchResult.First().Alpha2;
             await Log("set", $"Best Parameter: {countryCode}");
+            
+            
         }
 
         var getCountry = MySqlUtility.GetCountry(countryCode);
