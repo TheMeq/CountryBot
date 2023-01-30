@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using static Discord.GatewayIntents;
 using CountryBot.Models;
+using Discord.Rest;
 
 namespace CountryBot;
 internal class Program
@@ -67,6 +68,19 @@ internal class Program
         _client.UserLeft += async (guild, user) =>
         {
             MySqlUtility.RemoveUser(guild.Id, user.Id);
+            var log = new ConsoleLogger();
+            var getUser = MySqlUtility.GetUser(guild.Id, user.Id);
+            var getRole = MySqlUtility.GetRole(guild.Id, getUser.CountryId);
+            var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
+            var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guild.Id, getUser.CountryId);
+            if (!doesRoleContainUsers)
+            {
+                await guild.GetRole(getRole.RoleId).DeleteAsync();
+                await log.Log(new LogMessage(LogSeverity.Info, "Bot",
+                    $"Removing role {getCountryToRemove.Country} from {guild.Name} since it's no longer needed."));
+                MySqlUtility.RemoveRole(guild.Id, getRole.RoleId);
+            }
+
             var userCount = MySqlUtility.UserCount();
             await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
         };
