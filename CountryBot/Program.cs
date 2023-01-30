@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using static Discord.GatewayIntents;
 using CountryBot.Models;
-using Discord.Rest;
 
 namespace CountryBot;
 internal class Program
