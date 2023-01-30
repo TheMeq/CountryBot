@@ -64,6 +64,13 @@ internal class Program
         _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
         commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
 
+        _client.UserLeft += async (guild, user) =>
+        {
+            MySqlUtility.RemoveUser(guild.Id, user.Id);
+            var userCount = MySqlUtility.UserCount();
+            await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
+        };
+
         _client.Ready += async () =>
         {
             if (IsDebug())
