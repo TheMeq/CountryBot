@@ -180,11 +180,11 @@ internal static class BotEmbeds
             .WithDescription(embedDescription)
             .WithColor(DiscordGreen)
             .WithThumbnailUrl("https://cdn.discordapp.com/avatars/992112299894636614/98a2a0e1fce02c61f18acd7a79725e34.png?size=512")
-            .WithFooter($"{userCount} CountryBot users across {guildCount} guilds, {guildUserCount} in this guild!");
+            .WithFooter($"{userCount:##,###} CountryBot users across {guildCount:##,###} guilds, {guildUserCount:##,###} in this guild!");
 
         foreach (var stat in statsToShow)
         {
-            embed.Fields.Add(new EmbedFieldBuilder { Name = $":flag_{stat.Alpha2.ToLower()}: {stat.Country}", Value = $"{stat.Result} users!", IsInline = true });
+            embed.Fields.Add(new EmbedFieldBuilder { Name = $":flag_{stat.Alpha2.ToLower()}: {stat.Country}", Value = $"{stat.Result:##,###} users!", IsInline = true });
         }
         return embed;
     }
