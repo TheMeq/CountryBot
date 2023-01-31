@@ -21,7 +21,7 @@ public static class GeneralUtility
         return formatted;
     }
 
-    private static string Plural(this int input)
+    public static string Plural(this int input)
     {
         return input != 1 ? "s" : string.Empty;
     }

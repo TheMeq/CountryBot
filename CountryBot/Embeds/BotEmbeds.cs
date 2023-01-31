@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CountryBot.Models;
+using CountryBot.Utilities;
 using Discord;
 
 namespace CountryBot.Embeds;
@@ -184,7 +185,7 @@ internal static class BotEmbeds
 
         foreach (var stat in statsToShow)
         {
-            embed.Fields.Add(new EmbedFieldBuilder { Name = $":flag_{stat.Alpha2.ToLower()}: {stat.Country}", Value = $"{stat.Result:##,###} users!", IsInline = true });
+            embed.Fields.Add(new EmbedFieldBuilder { Name = $":flag_{stat.Alpha2.ToLower()}: {stat.Country}", Value = $"{stat.Result:##,###} user{stat.Result.Plural()}!", IsInline = true });
         }
         return embed;
     }
