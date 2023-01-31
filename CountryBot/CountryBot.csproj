@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
 	<AssemblyVersion>0.1.*</AssemblyVersion>
 	<Deterministic>false</Deterministic>
+	<ApplicationIcon>CountryBot.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,10 @@
     <EmbeddedResource Remove="Queries\**" />
     <None Remove="Enumerations\**" />
     <None Remove="Queries\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CountryBot.ico" />
   </ItemGroup>
 
   <ItemGroup>

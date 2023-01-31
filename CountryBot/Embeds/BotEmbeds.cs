@@ -10,7 +10,7 @@ internal static class BotEmbeds
     private static readonly Color DiscordGreen = new(59, 165, 93);
     private static readonly Color DiscordYellow = new(250, 168, 26);
     private static readonly Color DiscordRed = new(237, 66, 59);
-    
+
     public static EmbedBuilder SearchResults(IEnumerable<CountryModel> listOfCountries, string searchQuery)
     {
         return new EmbedBuilder()
@@ -160,5 +160,28 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle($"Your country/region is already set to {country.Country} on this guild!")
             .WithColor(DiscordYellow);
+    }
+
+    public static EmbedBuilder NewStats(string guildName, IEnumerable<StatsModel> stats, int page)
+    {
+        var statsToShow = stats.Skip((page * 9) - 9).Take(9);
+        var embedTitle = $"Stats in {guildName}!";
+        var embedDescription = "Here is where users are from in this guild!";
+        if (guildName == "Worldwide")
+        {
+            embedTitle = "Stats across the world!";
+            embedDescription = "Here is where CountryBot users are from across the world!";
+        }
+
+        var embed = new EmbedBuilder()
+            .WithTitle(embedTitle)
+            .WithDescription(embedDescription)
+            .WithColor(DiscordGreen);
+
+        foreach (var stat in statsToShow)
+        {
+            embed.Fields.Add(new EmbedFieldBuilder { Name = $":flag_{stat.Alpha2.ToLower()}: {stat.Country}", Value = $"{stat.Result} users!", IsInline = true });
+        }
+        return embed;
     }
 }

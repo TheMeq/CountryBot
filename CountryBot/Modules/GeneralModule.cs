@@ -264,8 +264,52 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         await DeferAsync();
         await Log("stats", $"Parameter: {worldWide}");
         var stats = MySqlUtility.GetStats(Context.Guild.Id, worldWide);
-        var statsEmbed = BotEmbeds.Stats(Context.Guild.Name, stats, worldWide);
-        await FollowupAsync(embed: statsEmbed.Build(), ephemeral: true);
+        var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
+        var guildName = worldWide ? "Worldwide" : Context.Guild.Name;
+        
+        var embed = BotEmbeds.NewStats(guildName, stats, 1);
+        var components = new ComponentBuilder();
+        if (maxPages > 1)
+        {
+            components.WithButton("Next", $"StatsNavigator:next,1,{worldWide}", ButtonStyle.Secondary);
+        }
+        await FollowupAsync(embed: embed.Build(), components: components.Build(), ephemeral: true);
+    }
+
+    [ComponentInteraction("StatsNavigator:*,*,*")]
+    public async Task StatsAdditional(string direction, int currentPage, string worldWide)
+    {
+        switch (direction)
+        {
+            case "next":
+                currentPage++;
+                break;
+            case "previous":
+                currentPage--;
+                break;
+        }
+        await DeferAsync();
+        await Log("stats", $"Parameter: {worldWide}, {direction}, {currentPage}");
+        var stats = MySqlUtility.GetStats(Context.Guild.Id, bool.Parse(worldWide));
+        var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
+        var guildName = bool.Parse(worldWide) ? "Worldwide" : Context.Guild.Name;
+        var embed = BotEmbeds.NewStats(guildName, stats, currentPage);
+        var components = new ComponentBuilder();
+        if (currentPage > 1)
+        {
+            components.WithButton("Previous", $"StatsNavigator:previous,{currentPage},{worldWide}", ButtonStyle.Secondary);
+        }
+        if (maxPages > currentPage)
+        {
+            components.WithButton("Next", $"StatsNavigator:next,{currentPage},{worldWide}", ButtonStyle.Secondary);
+        }
+
+
+        await ModifyOriginalResponseAsync(x =>
+        {
+            x.Embed = embed.Build();
+            x.Components = components.Build();
+        });
     }
 
     [RequireUserPermission(ChannelPermission.ManageRoles)]
