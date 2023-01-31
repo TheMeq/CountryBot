@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using CountryBot.Models;
 using Discord;
@@ -162,21 +163,24 @@ internal static class BotEmbeds
             .WithColor(DiscordYellow);
     }
 
-    public static EmbedBuilder NewStats(string guildName, IEnumerable<StatsModel> stats, int page)
+    public static EmbedBuilder NewStats(string guildName, IEnumerable<StatsModel> stats, int page, int userCount, int guildCount, int guildUserCount)
     {
         var statsToShow = stats.Skip((page * 9) - 9).Take(9);
+        var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
         var embedTitle = $"Stats in {guildName}!";
-        var embedDescription = "Here is where users are from in this guild!";
+        var embedDescription = $"Here is where users are from in this guild!\r\n(Page {page}/{maxPages})\r\n\r\n";
         if (guildName == "Worldwide")
         {
             embedTitle = "Stats across the world!";
-            embedDescription = "Here is where CountryBot users are from across the world!";
+            embedDescription = $"Here is where CountryBot users are from across the world!\r\n(Page {page}/{maxPages})\r\n\r\n";
         }
 
         var embed = new EmbedBuilder()
             .WithTitle(embedTitle)
             .WithDescription(embedDescription)
-            .WithColor(DiscordGreen);
+            .WithColor(DiscordGreen)
+            .WithThumbnailUrl("https://cdn.discordapp.com/avatars/992112299894636614/98a2a0e1fce02c61f18acd7a79725e34.png?size=512")
+            .WithFooter($"{userCount} CountryBot users across {guildCount} guilds, {guildUserCount} in this guild!");
 
         foreach (var stat in statsToShow)
         {

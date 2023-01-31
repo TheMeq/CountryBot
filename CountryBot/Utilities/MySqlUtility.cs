@@ -335,4 +335,14 @@ internal static class MySqlUtility
         };
         return DoQuery("SELECT * FROM valid_countries WHERE (Country LIKE @letter OR AlternativeNames LIKE @letter) AND Id NOT IN (185,186,189,190,193,201,207,213,212)", arguments).ConvertToList<CountryModel>();
     }
+
+    public static int UserCount(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        var results = DoQuery("SELECT * FROM users WHERE GuildId = @GuildId", arguments).ConvertToList<UserModel>();
+        return results.Count;
+    }
 }

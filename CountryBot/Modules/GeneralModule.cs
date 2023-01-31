@@ -266,8 +266,10 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var stats = MySqlUtility.GetStats(Context.Guild.Id, worldWide);
         var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
         var guildName = worldWide ? "Worldwide" : Context.Guild.Name;
-        
-        var embed = BotEmbeds.NewStats(guildName, stats, 1);
+        var userCount = MySqlUtility.UserCount();
+        var guildCount = _client.Guilds.Count;
+        var guildUserCount = MySqlUtility.UserCount(Context.Guild.Id);
+        var embed = BotEmbeds.NewStats(guildName, stats, 1, userCount, guildCount,guildUserCount);
         var components = new ComponentBuilder();
         if (maxPages > 1)
         {
@@ -293,7 +295,10 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var stats = MySqlUtility.GetStats(Context.Guild.Id, bool.Parse(worldWide));
         var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
         var guildName = bool.Parse(worldWide) ? "Worldwide" : Context.Guild.Name;
-        var embed = BotEmbeds.NewStats(guildName, stats, currentPage);
+        var userCount = MySqlUtility.UserCount();
+        var guildCount = _client.Guilds.Count;
+        var guildUserCount = MySqlUtility.UserCount(Context.Guild.Id);
+        var embed = BotEmbeds.NewStats(guildName, stats, currentPage, userCount, guildCount, guildUserCount);
         var components = new ComponentBuilder();
         if (currentPage > 1)
         {
