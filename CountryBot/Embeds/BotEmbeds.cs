@@ -185,7 +185,7 @@ internal static class BotEmbeds
 
         foreach (var stat in statsToShow)
         {
-            embed.Fields.Add(new EmbedFieldBuilder { Name = $":flag_{stat.Alpha2.ToLower()}: {stat.Country}", Value = $"{stat.Result:##,###} user{stat.Result.Plural()}!", IsInline = true });
+            embed.Description += $":flag_{stat.Alpha2.ToLower()}: **{stat.Country}** - {stat.Result:##,###} user{stat.Result.Plural()}!\r\n";
         }
         return embed;
     }

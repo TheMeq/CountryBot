@@ -31,7 +31,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("search", "Search for your country/region code.")]
     public async Task Search(string searchQuery)
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         await Log("search",$"Parameter: {searchQuery}");
         var searchResult = MySqlUtility.Search(searchQuery);
         var searchEmbed = searchResult.Count == 0 ? BotEmbeds.NoSearchResults(searchQuery) : BotEmbeds.SearchResults(searchResult, searchQuery);
@@ -42,7 +42,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     // ReSharper disable once MemberCanBePrivate.Global
     public async Task Set(string countryCode)
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         countryCode = countryCode.ToUpper();
         await Log("set", $"Parameter: {countryCode}");
 
@@ -194,7 +194,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("remove", "Remove your currently set country.")]
     public async Task Remove()
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         ulong guildId;
         try
         {
@@ -252,7 +252,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("help", "View help information about this bot.")]
     public async Task Help()
     {
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         await Log("help");
         var helpEmbed = BotEmbeds.Help();
         await FollowupAsync(embed: helpEmbed.Build(), ephemeral: true);
@@ -290,7 +290,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 currentPage--;
                 break;
         }
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         await Log("stats", $"Parameter: {worldWide}, {direction}, {currentPage}");
         var stats = MySqlUtility.GetStats(Context.Guild.Id, bool.Parse(worldWide));
         var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
@@ -322,7 +322,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     public async Task Choose()
     {
         await Log("choose");
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         var embed = BotEmbeds.CountryLetterSelector();
         var component = new ComponentBuilder();
         var countryList = new SelectMenuBuilder
@@ -347,7 +347,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     public async Task CountryLetterSelector(string selectedValue)
     {
         await Log("choose", $"Parameter: {selectedValue}");
-        await DeferAsync();
+        await DeferAsync(ephemeral: true);
         var embed = BotEmbeds.CountrySelector();
         var component = new ComponentBuilder();
         var countries = MySqlUtility.GetCountries(selectedValue);
