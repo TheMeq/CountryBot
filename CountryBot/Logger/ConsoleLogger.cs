@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
+using CountryBot.Utilities;
 
 namespace CountryBot.Logger;
 
@@ -13,6 +14,6 @@ public sealed class ConsoleLogger : Logger
 
     private async Task LogToConsoleAsync(LogMessage message)
     {
-        await Task.Run(() => Console.WriteLine($"GUID:{SystemGuid}: " + message));
+        await Task.Run(() => ColorConsole.WriteEmbeddedColorLine($"GUID:[yellow]{SystemGuid}[/yellow]: " + message));
     }
 }

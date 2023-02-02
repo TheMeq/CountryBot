@@ -15,11 +15,11 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 {
     private static ConsoleLogger _logger;
     private readonly DiscordSocketClient _client;
-
-    private async Task Log(string ranCommand, string message = "", LogSeverity logSeverity = LogSeverity.Info)
+    
+    private async Task Log(string ranCommand, string message = "", LogSeverity logSeverity = LogSeverity.Info, string source = "GeneralModule")
     {
-        await _logger.Log(new LogMessage(logSeverity, "GeneralModule", $"[Guild: {Context.Guild.Name}][User: {Context.User.Username}][Command: {ranCommand}]"));
-        if(message != "") await _logger.Log(new LogMessage(logSeverity, "GeneralModule", $"    {message}"));
+        await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name}[/red]][User: [green]{Context.User.Username}[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
+        if(message != "") await _logger.Log(new LogMessage(logSeverity, source, $"    {message}"));
     }
 
     public GeneralModule(ConsoleLogger logger, DiscordSocketClient client)
@@ -322,7 +322,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     public async Task Choose()
     {
         await Log("choose");
-        await DeferAsync(ephemeral: true);
+        await DeferAsync();
         var embed = BotEmbeds.CountryLetterSelector();
         var component = new ComponentBuilder();
         var countryList = new SelectMenuBuilder
@@ -340,7 +340,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         }
 
         component.WithSelectMenu(countryList);
-        await FollowupAsync(embed: embed.Build(), components: component.Build(), ephemeral: true);
+        await FollowupAsync(embed: embed.Build(), components: component.Build());
     }
 
     [ComponentInteraction("countryLetterSelector")]
