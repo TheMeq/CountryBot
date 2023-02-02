@@ -118,7 +118,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 {
                     
                     await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
-                    await Log("set", $"Removing role {getCountry.Country} from {Context.Guild.Name} since it's no longer needed.");
+                    await Log("set", $"Removing role {getCountryToRemove.Country} from {Context.Guild.Name} since it's no longer needed.");
                     MySqlUtility.RemoveRole(guildId, getRole.RoleId);
                 }
             }
