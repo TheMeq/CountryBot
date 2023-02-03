@@ -189,4 +189,35 @@ internal static class BotEmbeds
         }
         return embed;
     }
+
+    public static EmbedBuilder NotDeveloper()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Sorry, this command is only available to the Bot Developer as it's used for debugging and troubleshooting.")
+            .WithColor(DiscordRed);
+    }
+
+    public static EmbedBuilder RemoveOnEmptyChangeComplete(bool enableRemoveOnEmpty)
+    {
+        return new EmbedBuilder()
+            .WithTitle("Set Flag Role Icons")
+            .WithDescription(enableRemoveOnEmpty ? "Roles will now be removed when they are empty." : "Roles will no longer be removed when they are empty.")
+            .WithColor(DiscordGreen);
+    }
+
+    public static EmbedBuilder OverrideComplete()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Override Added")
+            .WithDescription("An override was added successfully.")
+            .WithColor(DiscordGreen);
+    }
+
+    public static EmbedBuilder AddUserComplete()
+    {
+        return new EmbedBuilder()
+            .WithTitle("User Added")
+            .WithDescription("A user was added to a role successfully.")
+            .WithColor(DiscordGreen);
+    }
 }

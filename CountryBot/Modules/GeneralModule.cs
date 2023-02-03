@@ -116,10 +116,14 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
                 if (!doesRoleContainUsers)
                 {
-                    
-                    await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
-                    await Log("set", $"Removing role {getCountryToRemove.Country} from {Context.Guild.Name} since it's no longer needed.");
-                    MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                    var guildInfo = MySqlUtility.GetGuild(guildId);
+                    if (guildInfo == null || guildInfo.RemoveOnEmpty == 1)
+                    {
+                        await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
+                        await Log("set",
+                            $"Removing role {getCountryToRemove.Country} from {Context.Guild.Name} since it's no longer needed.");
+                        MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                    }
                 }
             }
             
@@ -223,9 +227,13 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
                 if (!doesRoleContainUsers)
                 {
-                    await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
-                    await Log("remove", $"Removing role {getCountry.Country} since it's no longer needed.");
-                    MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                    var guildInfo = MySqlUtility.GetGuild(guildId);
+                    if (guildInfo == null || guildInfo.RemoveOnEmpty == 1)
+                    {
+                        await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
+                        await Log("remove", $"Removing role {getCountry.Country} since it's no longer needed.");
+                        MySqlUtility.RemoveRole(guildId, getRole.RoleId);
+                    }
                 }
 
                 var countryRemovedEmbed = BotEmbeds.CountryRemoved();

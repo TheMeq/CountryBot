@@ -35,7 +35,7 @@ internal class Program
                 services
                     .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
                     {
-                        GatewayIntents = Guilds | GuildBans | GuildEmojis | GuildMessages | GuildMessageReactions | DirectMessages, AlwaysDownloadUsers = true
+                        GatewayIntents = Guilds | GuildBans | GuildEmojis | GuildMessageReactions | DirectMessages, AlwaysDownloadUsers = true
                     }))
                     .AddTransient<ConsoleLogger>()
                     .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
@@ -66,20 +66,26 @@ internal class Program
 
         _client.UserLeft += async (guild, user) =>
         {
-            MySqlUtility.RemoveUser(guild.Id, user.Id);
+            
             var log = new ConsoleLogger();
             var getUser = MySqlUtility.GetUser(guild.Id, user.Id);
+            if (getUser == null) return;
             var getRole = MySqlUtility.GetRole(guild.Id, getUser.CountryId);
             var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
             var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guild.Id, getUser.CountryId);
             if (!doesRoleContainUsers)
             {
-                await guild.GetRole(getRole.RoleId).DeleteAsync();
-                await log.Log(new LogMessage(LogSeverity.Info, "Bot",
-                    $"Removing role {getCountryToRemove.Country} from {guild.Name} since it's no longer needed."));
-                MySqlUtility.RemoveRole(guild.Id, getRole.RoleId);
+                var guildInfo = MySqlUtility.GetGuild(guild.Id);
+                if (guildInfo == null || guildInfo.RemoveOnEmpty == 1)
+                {
+                    await guild.GetRole(getRole.RoleId).DeleteAsync();
+                    await log.Log(new LogMessage(LogSeverity.Info, "Bot",
+                        $"Removing role {getCountryToRemove.Country} from {guild.Name} since it's no longer needed."));
+                    MySqlUtility.RemoveRole(guild.Id, getRole.RoleId);
+                }
             }
 
+            MySqlUtility.RemoveUser(guild.Id, user.Id);
             var userCount = MySqlUtility.UserCount();
             await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
         };

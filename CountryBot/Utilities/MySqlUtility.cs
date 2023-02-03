@@ -1,9 +1,11 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using CountryBot.Models;
 using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI.Common;
 
 namespace CountryBot.Utilities;
 internal static class MySqlUtility
@@ -33,6 +35,7 @@ internal static class MySqlUtility
                 try
                 {
                     if (!columnNames.Contains(propertyInfo.Name)) continue;
+                    if (objT == null) continue;
                     var newPropertyInfo = objT.GetType().GetProperty(propertyInfo.Name);
                     if (newPropertyInfo != null)
                     {
@@ -52,7 +55,7 @@ internal static class MySqlUtility
         }).ToList();
     }
 
-    private static DataTable DoQuery(string query, Dictionary<string, object> parameters = null)
+    private static DataTable DoQuery(string query, Dictionary<string, object>? parameters = null)
     {
         using var connection = new MySqlConnection(ConnectionStringBuilder());
         connection.Open();
@@ -73,7 +76,7 @@ internal static class MySqlUtility
         return dt;
     }
 
-    private static void DoNonQuery(string query, Dictionary<string, object> parameters = null)
+    private static void DoNonQuery(string query, Dictionary<string, object>? parameters = null)
     {
         using var connection = new MySqlConnection(ConnectionStringBuilder());
         connection.Open();
@@ -156,7 +159,7 @@ internal static class MySqlUtility
         return results.Count == 1;
     }
 
-    public static UserModel GetUser(ulong guildId, ulong userId)
+    public static UserModel? GetUser(ulong guildId, ulong userId)
     {
         var arguments = new Dictionary<string, object>
         {
@@ -164,7 +167,7 @@ internal static class MySqlUtility
             {"GuildId", guildId}
         };
         var results = DoQuery("SELECT * FROM users WHERE UserId = @UserId and GuildId = @GuildId", arguments).ConvertToList<UserModel>();
-        return results[0];
+        return results.Count == 0 ? null : results[0]; ;
     }
 
     public static void RemoveUser(ulong guildId, ulong userId)
@@ -297,6 +300,26 @@ internal static class MySqlUtility
         DoNonQuery("INSERT INTO guilds (GuildId, FlagsEnabled) VALUES (@GuildId, @FlagsEnabled) ON DUPLICATE KEY UPDATE FlagsEnabled = @FlagsEnabled", arguments);
     }
 
+    public static void SetGuildRemoveOnEmpty(ulong guildId, int removeOnEmptyEnabled)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId},
+            {"RemoveOnEmpty", removeOnEmptyEnabled}
+        };
+        DoNonQuery("INSERT INTO guilds (GuildId, RemoveOnEmpty) VALUES (@GuildId, @RemoveOnEmpty) ON DUPLICATE KEY UPDATE RemoveOnEmpty = @RemoveOnEmpty", arguments);
+    }
+
+    public static GuildsModel? GetGuild(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"GuildId", guildId}
+        };
+        var result = DoQuery("SELECT * FROM guilds WHERE GuildId = @GuildId", arguments).ConvertToList<GuildsModel>();
+        return result.Count == 0 ? null : result[0];
+    }
+
     public static bool GetFlagsDisabledForThisGuild(ulong guildId)
     {
         var arguments = new Dictionary<string, object>
@@ -344,5 +367,15 @@ internal static class MySqlUtility
         };
         var results = DoQuery("SELECT * FROM users WHERE GuildId = @GuildId", arguments).ConvertToList<UserModel>();
         return results.Count;
+    }
+
+    public static CountryModel GetCountryId(ulong roleId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"RoleId", roleId},
+        };
+        var results = DoQuery("SELECT * FROM valid_countries WHERE RoleId = @RoleId", arguments).ConvertToList<CountryModel>();
+        return results[0];
     }
 }

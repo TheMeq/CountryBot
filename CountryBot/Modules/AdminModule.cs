@@ -3,6 +3,7 @@ using CountryBot.Logger;
 using CountryBot.Utilities;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using System.Threading.Tasks;
 
 namespace CountryBot.Modules;
@@ -12,15 +13,17 @@ namespace CountryBot.Modules;
 public class AdminModule : InteractionModuleBase<SocketInteractionContext>
 {
     private static ConsoleLogger _logger;
+    private readonly DiscordSocketClient _client;
 
     private async Task Log(string ranCommand, LogSeverity logSeverity = LogSeverity.Info)
     {
         await _logger.Log(new LogMessage(logSeverity, "GeneralModule", $"User: {Context.User.Username} - Command: {ranCommand}"));
     }
 
-    public AdminModule(ConsoleLogger logger)
+    public AdminModule(ConsoleLogger logger, DiscordSocketClient client)
     {
         _logger = logger;
+        _client = client;
     }
 
     [SlashCommand("purge", "Removes all the roles and data created by the bot from your server.")]
@@ -55,6 +58,73 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await FollowupAsync(embed: purgeCompleteEmbed.Build(), ephemeral: true);
     }
 
+    [SlashCommand("override", "Overrides the bot's role system. Converts existing server roles to work with the bot.")]
+    public async Task Override(IRole role, string alpha2)
+    {
+        var countryCode = MySqlUtility.GetCountry(alpha2);
+        await Log($"{Context.User.Username} used the Override command in {Context.Guild.Name}");
+        await DeferAsync(ephemeral: true);
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log($"{Context.User.Username} tried to DM the Bot.");
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
+            return;
+        }
+
+        if (Context.User.Id != 207949234106793984)
+        {
+            await Log($"{Context.User.Username} tried to use a developer command.");
+            var notDeveloperEmbed = BotEmbeds.NotDeveloper();
+            await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
+            return;
+        }
+
+        await Log($"Manually adding {countryCode.Country} to {Context.Guild.Name}");
+        MySqlUtility.AddRole(guildId, role.Id, countryCode.Id);
+        await FollowupAsync(embed: BotEmbeds.OverrideComplete().Build(), ephemeral: true);
+    }
+
+    [SlashCommand("adduser", "Overrides the bot's role system. Converts existing server roles to work with the bot.")]
+    public async Task AddUser(IUser user, string alpha2)
+    {
+
+        var country = MySqlUtility.GetCountry(alpha2);
+        await Log($"{Context.User.Username} used the AddUser command in {Context.Guild.Name}");
+        await DeferAsync(ephemeral: true);
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log($"{Context.User.Username} tried to DM the Bot.");
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
+            return;
+        }
+
+        if (Context.User.Id != 207949234106793984)
+        {
+            await Log($"{Context.User.Username} tried to use a developer command.");
+            var notDeveloperEmbed = BotEmbeds.NotDeveloper();
+            await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
+            return;
+        }
+        
+        await Log($"Manually adding {user.Username} to {country.Country} in {Context.Guild.Name}");
+        MySqlUtility.AddUser(guildId, user.Id, country.Id);
+        await FollowupAsync(embed: BotEmbeds.AddUserComplete().Build(), ephemeral: true);
+        var userCount = MySqlUtility.UserCount();
+        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
+    }
+
     [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
     public async Task Flags(bool enableFlags)
     {
@@ -72,7 +142,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             {
                 await Log($"{Context.User.Username} tried to DM the Bot.");
                 var invalidGuildEmbed = BotEmbeds.NotInDms();
-                await FollowupAsync(embed: invalidGuildEmbed.Build());
+                await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
                 return;
             }
 
@@ -104,5 +174,32 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             var flagChangeFailedEmbed = BotEmbeds.FlagChangeFailed();
             await FollowupAsync(embed: flagChangeFailedEmbed.Build(), ephemeral: true);
         }
+    }
+
+    [SlashCommand("removeonempty", "Choose whether your roles should be removed when the last user leaves.")]
+    public async Task RemoveOnEmpty(bool enableRemoveOnEmpty)
+    {
+        await Log($"{Context.User.Username} used the RemoveOnEmpty command in {Context.Guild.Name}");
+        await Log($"{Context.User.Username} used the Parameter {enableRemoveOnEmpty}");
+        await DeferAsync(ephemeral: true);
+        
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log($"{Context.User.Username} tried to DM the Bot.");
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
+            return;
+        }
+        
+        MySqlUtility.SetGuildRemoveOnEmpty(guildId, enableRemoveOnEmpty ? 1 : 0);
+        var removeOnEmptyChangeCompleteEmbed = BotEmbeds.RemoveOnEmptyChangeComplete(enableRemoveOnEmpty);
+        await FollowupAsync(embed: removeOnEmptyChangeCompleteEmbed.Build(), ephemeral: true);
+    
+    
     }
 }
