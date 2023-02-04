@@ -5,7 +5,6 @@ using System.Data;
 using System.Linq;
 using CountryBot.Models;
 using MySql.Data.MySqlClient;
-using MySqlX.XDevAPI.Common;
 
 namespace CountryBot.Utilities;
 internal static class MySqlUtility
@@ -167,7 +166,7 @@ internal static class MySqlUtility
             {"GuildId", guildId}
         };
         var results = DoQuery("SELECT * FROM users WHERE UserId = @UserId and GuildId = @GuildId", arguments).ConvertToList<UserModel>();
-        return results.Count == 0 ? null : results[0]; ;
+        return results.Count == 0 ? null : results[0];
     }
 
     public static void RemoveUser(ulong guildId, ulong userId)

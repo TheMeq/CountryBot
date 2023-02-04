@@ -98,7 +98,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 
                 var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
                 var socketGuildUser = (SocketGuildUser) Context.User;
-                var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
+                var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
                 await Log("set",$"Already in role {getCountryToRemove.Country}.");
                 if (getCountryToRemove.Alpha2 == countryCode)
@@ -136,7 +136,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
             else
             {
-                await Log($"Adding new role to {Context.Guild.Name}...");
+                await Log("set",$"Adding new role to {Context.Guild.Name}...");
                 var roleCount = Context.Guild.Roles.Count;
                 if (roleCount >= 249)
                 {
@@ -218,7 +218,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             {
                 var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
                 var socketGuildUser = (SocketGuildUser) Context.User;
-                var getRole = MySqlUtility.GetRole(guildId, getUser.CountryId);
+                var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountry = MySqlUtility.GetCountryById(getRole.CountryId);
                 await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
                 await Log("remove", $"Removed from {getCountry.Country}");

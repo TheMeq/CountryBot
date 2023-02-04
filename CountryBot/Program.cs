@@ -60,7 +60,6 @@ internal class Program
         StaticConfig = GeneralUtility.BuildConfig("appsettings.json");
 
         await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-
         _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
         commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
 
@@ -97,6 +96,14 @@ internal class Program
             else
                 await commands.RegisterCommandsGloballyAsync();
 
+            Console.WriteLine("Bot is in: ");
+            foreach (var guild in _client.Guilds)
+            {
+                Console.Write($"'{guild.Name}', ");
+            }
+
+            Console.WriteLine();
+            
             var numberOfUsers = MySqlUtility.UserCount();
             await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
 
