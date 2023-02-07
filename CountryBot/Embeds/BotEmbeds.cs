@@ -80,7 +80,7 @@ internal static class BotEmbeds
     {
         var embed = new EmbedBuilder()
             .WithTitle("CountryBot Help")
-            .WithDescription($"For additional bot support, please join the support Discord: [CountryBot Support]({supportUrl})\r\n\r\nThese are the commands you can use:")
+            .WithDescription($"For additional bot support, please join the support Discord: [CountryBot Support]({supportUrl}).\r\n\r\nThese are the commands you can use:")
             .AddField("/choose", "Provides a permanent drop down menu for users to select countries/regions.")
             .AddField("/search <country>", "Search for your country/region code.")
             .AddField("/set <country code>", "Sets your country/region role to the country/region with the given country/region code.")
@@ -123,7 +123,7 @@ internal static class BotEmbeds
     {
         return new EmbedBuilder()
             .WithTitle("Set Flag Role Icons")
-            .WithDescription("Role Icons can't be set for your server as it has not yet reached Tier 2")
+            .WithDescription("Role Icons can't be set for your server as it has not yet reached Tier 2.")
             .WithColor(DiscordYellow);
     }
 

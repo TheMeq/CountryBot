@@ -32,7 +32,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     public async Task Search(string searchQuery)
     {
         await DeferAsync(ephemeral: true);
-        await Log("search",$"Parameter: {searchQuery}");
+        await Log("search",$"Parameter: [yellow]{searchQuery}[/yellow]");
         var searchResult = MySqlUtility.Search(searchQuery);
         var searchEmbed = searchResult.Count == 0 ? BotEmbeds.NoSearchResults(searchQuery) : BotEmbeds.SearchResults(searchResult, searchQuery);
         await FollowupAsync(embed: searchEmbed.Build(), ephemeral: true);
@@ -44,7 +44,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await DeferAsync(ephemeral: true);
         countryCode = countryCode.ToUpper();
-        await Log("set", $"Parameter: {countryCode}");
+        await Log("set", $"Parameter: [yellow]{countryCode}[/yellow]");
 
         ulong guildId;
         try
@@ -83,7 +83,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
            
             await Log("set", "Have found 1 closest match, using that instead.");
             countryCode = searchResult.First().Alpha2;
-            await Log("set", $"Best Parameter: {countryCode}");
+            await Log("set", $"Best Parameter: [yellow]{countryCode}[/yellow]");
             
             
         }
@@ -100,7 +100,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var socketGuildUser = (SocketGuildUser) Context.User;
                 var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
-                await Log("set",$"Already in role {getCountryToRemove.Country}.");
+                await Log("set",$"Already in role [cyan]{getCountryToRemove.Country}[/cyan].");
                 if (getCountryToRemove.Alpha2 == countryCode)
                 {
                     await Log("set", "No need to change role as they are already in it.");
@@ -121,7 +121,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     {
                         await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
                         await Log("set",
-                            $"Removing role {getCountryToRemove.Country} from {Context.Guild.Name} since it's no longer needed.");
+                            $"Removing role [cyan]{getCountryToRemove.Country}[/cyan] from [red]{Context.Guild.Name}[/red] since it's no longer needed.");
                         MySqlUtility.RemoveRole(guildId, getRole.RoleId);
                     }
                 }
@@ -136,7 +136,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
             else
             {
-                await Log("set",$"Adding new role to {Context.Guild.Name}...");
+                await Log("set",$"Adding new role to [red]{Context.Guild.Name}[/red]...");
                 var roleCount = Context.Guild.Roles.Count;
                 if (roleCount >= 249)
                 {
@@ -149,27 +149,27 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
                 var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false,
                     RequestOptions.Default);
-                await Log("set",$"Created role {createdRole.Name}.");
+                await Log("set",$"Created role [cyan]{createdRole.Name}[/cyan].");
                 if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
                 {
                     try
                     {
                         if (!MySqlUtility.GetFlagsDisabledForThisGuild(guildId))
                         {
-                            await Log("set", $"Attempting to set Emoji to ':flag_{getCountry.Alpha2.ToLower()}:'");
+                            await Log("set", $"Attempting to set Emoji to [cyan]:flag_{getCountry.Alpha2.ToLower()}:[/cyan]");
                             await createdRole.ModifyAsync(x =>
                                 x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
-                            await Log("set", $"Added Emoji for {getCountry.Country}");
+                            await Log("set", $"Added Emoji for [cyan]{getCountry.Country}[/cyan]");
                         }
                     }
                     catch (InvalidOperationException)
                     {
                         await Log(
-                            "set", $"Cannot add Emoji for {getCountry.Country} on this guild as it is not boosted.");
+                            "set", $"Cannot add Emoji for [cyan]{getCountry.Country}[/cyan] on this guild as it is not boosted.");
                     }
                     catch (Exception exception)
                     {
-                        await Log("set", $"Cannot add Emoji for {getCountry.Country}");
+                        await Log("set", $"Cannot add Emoji for [cyan]{getCountry.Country}[/cyan]");
                         Console.WriteLine(exception);
                     }
                 }
@@ -180,13 +180,13 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
 
             MySqlUtility.AddUser(guildId, Context.User.Id, getCountry.Id);
-            await Log("set", $"Added role {getCountry.Country} to {Context.User.Username}.");
+            await Log("set", $"Added role [cyan]{getCountry.Country}[/cyan] to [green]{Context.User.Username}[/green].");
             var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
             await FollowupAsync(embed: countrySetEmbed.Build(), ephemeral: true);
         }
         catch (Discord.Net.HttpException)
         {
-            await Log("set", $"Unable to set role for {Context.User.Username} to {countryCode} - Bot is missing permissions.");
+            await Log("set", $"Unable to set role for [green]{Context.User.Username}[/green] to [yellow]{countryCode}[/yellow] - Bot is missing permissions.");
             var errorEmbed = BotEmbeds.MissingPermissions();
             await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
         }
@@ -206,7 +206,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log("remove", "tried to DM the Bot.");
+            await Log("remove", "Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build());
             return;
@@ -221,7 +221,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountry = MySqlUtility.GetCountryById(getRole.CountryId);
                 await socketGuildUser.RemoveRoleAsync(getRole.RoleId);
-                await Log("remove", $"Removed from {getCountry.Country}");
+                await Log("remove", $"Removed from [cyan]{getCountry.Country}[/cyan]");
                 MySqlUtility.RemoveUser(guildId, Context.User.Id);
 
                 var doesRoleContainUsers = MySqlUtility.DoesRoleContainUsers(guildId, getUser.CountryId);
@@ -231,7 +231,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     if (guildInfo == null || guildInfo.RemoveOnEmpty == 1)
                     {
                         await Context.Guild.GetRole(getRole.RoleId).DeleteAsync();
-                        await Log("remove", $"Removing role {getCountry.Country} since it's no longer needed.");
+                        await Log("remove", $"Removing role [cyan]{getCountry.Country}[/cyan] since it's no longer needed.");
                         MySqlUtility.RemoveRole(guildId, getRole.RoleId);
                     }
                 }
@@ -241,7 +241,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             }
             catch (Discord.Net.HttpException)
             {
-                await Log("remove", $"Unable to remove role for {Context.User.Username} - Bot missing permissions");
+                await Log("remove", $"Unable to remove role for [green]{Context.User.Username}[/green] - Bot missing permissions");
                 var errorEmbed = BotEmbeds.MissingPermissions();
                 await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
             }
@@ -277,7 +277,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     public async Task Stats(bool worldWide = false)
     {
         await DeferAsync();
-        await Log("stats", $"Parameter: {worldWide}");
+        await Log("stats", $"Parameter: [yellow]{worldWide}[/yellow]");
         var stats = MySqlUtility.GetStats(Context.Guild.Id, worldWide);
         var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
         var guildName = worldWide ? "Worldwide" : Context.Guild.Name;
@@ -306,7 +306,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 break;
         }
         await DeferAsync(ephemeral: true);
-        await Log("stats", $"Parameter: {worldWide}, {direction}, {currentPage}");
+        await Log("stats", $"Parameter: [yellow]{worldWide}[/yellow], [yellow]{direction}[/yellow], [yellow]{currentPage}[/yellow]");
         var stats = MySqlUtility.GetStats(Context.Guild.Id, bool.Parse(worldWide));
         var maxPages = (int)Math.Ceiling((double)stats.Count() / 9);
         var guildName = bool.Parse(worldWide) ? "Worldwide" : Context.Guild.Name;
@@ -361,7 +361,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [ComponentInteraction("countryLetterSelector")]
     public async Task CountryLetterSelector(string selectedValue)
     {
-        await Log("choose", $"Parameter: {selectedValue}");
+        await Log("choose", $"Parameter: [yellow]{selectedValue}[/yellow]");
         await DeferAsync(ephemeral: true);
         var embed = BotEmbeds.CountrySelector();
         var component = new ComponentBuilder();
@@ -386,7 +386,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [ComponentInteraction("countrySelector")]
     public async Task CountrySelector(string selectedValue)
     {
-        await Log("choose", $"Parameter: {selectedValue}");
+        await Log("choose", $"Passing parameter [yellow]{selectedValue}[/yellow] to [cyan]set[/cyan]");
         await Set(selectedValue);
         
     }

@@ -15,11 +15,12 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     private static ConsoleLogger _logger;
     private readonly DiscordSocketClient _client;
 
-    private async Task Log(string ranCommand, LogSeverity logSeverity = LogSeverity.Info)
+    private async Task Log(string ranCommand, string message , LogSeverity logSeverity = LogSeverity.Info, string source = "GeneralModule")
     {
-        await _logger.Log(new LogMessage(logSeverity, "GeneralModule", $"User: {Context.User.Username} - Command: {ranCommand}"));
+        await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
+        if (message != "") await _logger.Log(new LogMessage(logSeverity, source, $"    {message}"));
     }
-
+    
     public AdminModule(ConsoleLogger logger, DiscordSocketClient client)
     {
         _logger = logger;
@@ -29,7 +30,6 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("purge", "Removes all the roles and data created by the bot from your server.")]
     public async Task Purge()
     {
-        await Log($"{Context.User.Username} used the Purge command in {Context.Guild.Name}");
         await DeferAsync(ephemeral: true);
         ulong guildId;
         try
@@ -38,7 +38,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log($"{Context.User.Username} tried to DM the Bot.");
+            await Log("admin purge",$"Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build());
             return;
@@ -47,7 +47,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         var allRolesForGuild = MySqlUtility.GetAllRolesForGuild(guildId);
         foreach (var roleInGuild in allRolesForGuild)
         {
-            await Log($"Deleting {roleInGuild.Id} in {Context.Guild.Name}...");
+            await Log("admin purge",$"Deleting [cyan]{roleInGuild.Id}[/cyan] in [red]{Context.Guild.Name}[/red]...");
             await Context.Guild.GetRole(roleInGuild.RoleId).DeleteAsync();
         }
 
@@ -62,7 +62,6 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     public async Task Override(IRole role, string alpha2)
     {
         var countryCode = MySqlUtility.GetCountry(alpha2);
-        await Log($"{Context.User.Username} used the Override command in {Context.Guild.Name}");
         await DeferAsync(ephemeral: true);
         ulong guildId;
         try
@@ -71,7 +70,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log($"{Context.User.Username} tried to DM the Bot.");
+            await Log("admin override","Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
@@ -79,13 +78,13 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
 
         if (Context.User.Id != 207949234106793984)
         {
-            await Log($"{Context.User.Username} tried to use a developer command.");
+            await Log("admin override","Tried to use a developer command.");
             var notDeveloperEmbed = BotEmbeds.NotDeveloper();
             await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
             return;
         }
 
-        await Log($"Manually adding {countryCode.Country} to {Context.Guild.Name}");
+        await Log("admin override",$"Manually adding [cyan]{countryCode.Country}[/cyan] to [red]{Context.Guild.Name}[/red]");
         MySqlUtility.AddRole(guildId, role.Id, countryCode.Id);
         await FollowupAsync(embed: BotEmbeds.OverrideComplete().Build(), ephemeral: true);
     }
@@ -95,7 +94,6 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     {
 
         var country = MySqlUtility.GetCountry(alpha2);
-        await Log($"{Context.User.Username} used the AddUser command in {Context.Guild.Name}");
         await DeferAsync(ephemeral: true);
         ulong guildId;
         try
@@ -104,7 +102,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log($"{Context.User.Username} tried to DM the Bot.");
+            await Log("admin adduser","Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
@@ -112,13 +110,13 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
 
         if (Context.User.Id != 207949234106793984)
         {
-            await Log($"{Context.User.Username} tried to use a developer command.");
+            await Log("admin adduser","Tried to use a developer command.");
             var notDeveloperEmbed = BotEmbeds.NotDeveloper();
             await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
             return;
         }
         
-        await Log($"Manually adding {user.Username} to {country.Country} in {Context.Guild.Name}");
+        await Log("admin adduser",$"Manually adding [green]{user.Username}[/green] to [cyan]{country.Country}[/cyan] in [red]{Context.Guild.Name}[/red]");
         MySqlUtility.AddUser(guildId, user.Id, country.Id);
         await FollowupAsync(embed: BotEmbeds.AddUserComplete().Build(), ephemeral: true);
         var userCount = MySqlUtility.UserCount();
@@ -128,8 +126,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
     public async Task Flags(bool enableFlags)
     {
-        await Log($"{Context.User.Username} used the Flags command in {Context.Guild.Name}");
-        await Log($"{Context.User.Username} used the Parameter {enableFlags}");
+        await Log("admin flags",$"Parameter: [yellow]{enableFlags}[/yellow]");
         await DeferAsync(ephemeral: true);
         if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
         {
@@ -140,18 +137,25 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             }
             catch
             {
-                await Log($"{Context.User.Username} tried to DM the Bot.");
+                await Log("admin flags", "Tried to DM the Bot.");
                 var invalidGuildEmbed = BotEmbeds.NotInDms();
                 await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
                 return;
             }
 
             var allRolesForGuild = MySqlUtility.GetAllRolesForGuild(guildId);
+            if (enableFlags)
+            {
+                await Log("admin flags", "Adding emoji's...");
+            }
+            else
+            {
+                await Log("admin flags", "Removing emoji's...");
+            }
             foreach (var roleInGuild in allRolesForGuild)
             {
                 if (enableFlags)
                 {
-                    await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to add icons...");
                     var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
                     var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
                     await roleToModify.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
@@ -159,7 +163,6 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
                 }
                 else
                 {
-                    await Log($"Updating '{roleInGuild.RoleId}' in {Context.Guild.Name} to remove icons...");
                     var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
                     await roleToModify.ModifyAsync(x => x.Emoji = null, RequestOptions.Default);
                 }
@@ -179,8 +182,8 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("removeonempty", "Choose whether your roles should be removed when the last user leaves.")]
     public async Task RemoveOnEmpty(bool enableRemoveOnEmpty)
     {
-        await Log($"{Context.User.Username} used the RemoveOnEmpty command in {Context.Guild.Name}");
-        await Log($"{Context.User.Username} used the Parameter {enableRemoveOnEmpty}");
+        
+        await Log("admin removeonempty", $"Parameter: [yellow]{enableRemoveOnEmpty}[/yellow]");
         await DeferAsync(ephemeral: true);
         
         ulong guildId;
@@ -190,7 +193,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log($"{Context.User.Username} tried to DM the Bot.");
+            await Log("admin removeonempty","Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
