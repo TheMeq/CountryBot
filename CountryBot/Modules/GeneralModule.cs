@@ -18,7 +18,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
     private async Task Log(string ranCommand, string message, LogSeverity logSeverity = LogSeverity.Info, string source = "GeneralModule")
     {
-        await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
+        await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
         if (message != "") await _logger.Log(new LogMessage(logSeverity, source, $"    {message}"));
     }
 
@@ -268,7 +268,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         }
         
         await DeferAsync(ephemeral: true);
-        await Log("help");
+        await Log("help","Help command used.");
         var helpEmbed = BotEmbeds.Help(Program.StaticConfig.SupportUrl, isAdmin);
         await FollowupAsync(embed: helpEmbed.Build(), ephemeral: true);
     }
@@ -336,7 +336,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("choose", "Allows you to select your country/region role from a list.")]
     public async Task Choose()
     {
-        await Log("choose");
+        await Log("choose","Choose command used.");
         await DeferAsync();
         var embed = BotEmbeds.CountryLetterSelector();
         var component = new ComponentBuilder();

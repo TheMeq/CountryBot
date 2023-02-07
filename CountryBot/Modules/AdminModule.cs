@@ -17,7 +17,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
 
     private async Task Log(string ranCommand, string message , LogSeverity logSeverity = LogSeverity.Info, string source = "GeneralModule")
     {
-        await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
+        await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
         if (message != "") await _logger.Log(new LogMessage(logSeverity, source, $"    {message}"));
     }
     
