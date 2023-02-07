@@ -15,7 +15,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 {
     private static ConsoleLogger _logger;
     private readonly DiscordSocketClient _client;
-    
+
     private async Task Log(string ranCommand, string message = "", LogSeverity logSeverity = LogSeverity.Info, string source = "GeneralModule")
     {
         await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name}[/red]][User: [green]{Context.User.Username}[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
@@ -260,9 +260,16 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("help", "View help information about this bot.")]
     public async Task Help()
     {
+        var isAdmin = false;
+        var permissions = ((SocketGuildUser) Context.User).GuildPermissions;
+        if (permissions.Has(GuildPermission.ManageRoles))
+        {
+            isAdmin = true;
+        }
+        
         await DeferAsync(ephemeral: true);
         await Log("help");
-        var helpEmbed = BotEmbeds.Help();
+        var helpEmbed = BotEmbeds.Help(Program.StaticConfig.SupportUrl, isAdmin);
         await FollowupAsync(embed: helpEmbed.Build(), ephemeral: true);
     }
 

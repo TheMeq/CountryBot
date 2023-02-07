@@ -4,6 +4,7 @@ public class ConfigModel
     public DiscordModel DiscordModel { get; set; }
     public MysqlModel MysqlModel { get; set; }
     public int StatSize { get; set; }
+    public string SupportUrl { get; set; }
 }
 
 public class DiscordModel

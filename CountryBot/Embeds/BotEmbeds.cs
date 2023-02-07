@@ -76,18 +76,22 @@ internal static class BotEmbeds
             .WithColor(DiscordRed);            
     }
 
-    public static EmbedBuilder Help()
+    public static EmbedBuilder Help(string supportUrl, bool isAdmin)
     {
-        return new EmbedBuilder()
+        var embed = new EmbedBuilder()
             .WithTitle("CountryBot Help")
-            .WithDescription("For additional bot support, please join the support Discord: [CountryBot Support](https://discord.gg/2Sng2enNFW)\r\n\r\nThese are the commands you can use:")
+            .WithDescription($"For additional bot support, please join the support Discord: [CountryBot Support]({supportUrl})\r\n\r\nThese are the commands you can use:")
             .AddField("/choose", "Provides a permanent drop down menu for users to select countries/regions.")
             .AddField("/search <country>", "Search for your country/region code.")
             .AddField("/set <country code>", "Sets your country/region role to the country/region with the given country/region code.")
             .AddField("/remove", "Removes your country/region role from this guild.")
             .AddField("/stats <optional:false>","Shows how many people have used the bot, use /stats true to see worldwide statistics.")
-
             .WithColor(DiscordYellow);
+        if (!isAdmin) return embed;
+        embed.AddField("/admin purge", "Removes all roles and user data from the database associated with this guild.");
+        embed.AddField("/admin flags", "Choose whether your roles should have flag emoji's assigned to them (Requires a boosted server.");
+        embed.AddField("/admin removeonempty", "Choose whether a role should be deleted if it's empty or not.");
+        return embed;
     }
 
     public static EmbedBuilder PurgeComplete()
