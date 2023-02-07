@@ -386,7 +386,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     [ComponentInteraction("countrySelector")]
     public async Task CountrySelector(string selectedValue)
     {
-        await Log("choose", $"Passing parameter [yellow]{selectedValue}[/yellow] to [cyan]set[/cyan]");
+        await Log("choose", $"Passing parameter [yellow]{selectedValue}[/yellow] to [cyan]set[/cyan].");
         await Set(selectedValue);
         
     }
