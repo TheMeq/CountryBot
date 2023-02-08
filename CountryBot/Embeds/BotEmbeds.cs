@@ -205,7 +205,7 @@ internal static class BotEmbeds
     public static EmbedBuilder RemoveOnEmptyChangeComplete(bool enableRemoveOnEmpty)
     {
         return new EmbedBuilder()
-            .WithTitle("Set Flag Role Icons")
+            .WithTitle("Set toggle to Remove Roles when empty")
             .WithDescription(enableRemoveOnEmpty ? "Roles will now be removed when they are empty." : "Roles will no longer be removed when they are empty.")
             .WithColor(DiscordGreen);
     }

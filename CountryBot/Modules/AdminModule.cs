@@ -123,7 +123,9 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 
+    
     [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
+    [Throttle(ThrottleBy.Guild, 1, 21600)]
     public async Task Flags(bool enableFlags)
     {
         await Log("admin flags",$"Parameter: [yellow]{enableFlags}[/yellow]");
@@ -152,14 +154,16 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             {
                 await Log("admin flags", "Removing emoji's...");
             }
+
             foreach (var roleInGuild in allRolesForGuild)
             {
                 if (enableFlags)
                 {
                     var getCountry = MySqlUtility.GetCountryById(roleInGuild.CountryId);
                     var roleToModify = Context.Guild.GetRole(roleInGuild.RoleId);
-                    await roleToModify.ModifyAsync(x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"), RequestOptions.Default);
-
+                    await roleToModify.ModifyAsync(
+                        x => x.Emoji = Emoji.Parse($":flag_{getCountry.Alpha2.ToLower()}:"),
+                        RequestOptions.Default);
                 }
                 else
                 {

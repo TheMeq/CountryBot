@@ -45,6 +45,7 @@ internal class Program
                         LogLevel = LogSeverity.Debug,
                         DefaultRunMode = Discord.Commands.RunMode.Async
                     }))
+                    .AddSingleton<IThrottleService, ThrottleService>()
             ).Build();
 
         await RunAsync(host);
