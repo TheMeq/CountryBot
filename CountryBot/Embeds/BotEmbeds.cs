@@ -57,7 +57,7 @@ internal static class BotEmbeds
     {
         return new EmbedBuilder()
             .WithTitle("Don't do the commands here!")
-            .WithDescription("These commands are guild specific, so the command has to be done in the guild you want to set or remove the role on.")
+            .WithDescription("These commands are guild specific, so the command has to be done in the guild you want to use it on.")
             .WithColor(DiscordRed);
     }
 
