@@ -58,29 +58,33 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             await FollowupAsync(embed: invalidGuildEmbed.Build());
             return;
         }
-        
+
+        var socketGuildUser = (SocketGuildUser)Context.User;
+
         var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);
         if (!isValidCountryCode)
         {
             var searchResult = MySqlUtility.Search(countryCode);
-            if (searchResult.Count > 1)
+            switch (searchResult.Count)
             {
-                await Log("set", "Unable to set role as parameter is invalid or there is more then 1 match.");
-                var errorEmbed = searchResult.Count >= 2
-                    ? BotEmbeds.InvalidCountryCode(searchResult)
-                    : BotEmbeds.InvalidCountryCode();
-                await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
-                return;
+                case > 1:
+                {
+                    await Log("set", "Unable to set role as parameter is invalid or there is more then 1 match.");
+                    var errorEmbed = searchResult.Count >= 2
+                        ? BotEmbeds.InvalidCountryCode(searchResult)
+                        : BotEmbeds.InvalidCountryCode();
+                    await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
+                    return;
+                }
+                case 0:
+                {
+                    await Log("set", "Unable to set role as parameter is invalid.");
+                    var errorEmbed = BotEmbeds.InvalidCountryCode();
+                    await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
+                    return;
+                }
             }
 
-            if (searchResult.Count == 0)
-            {
-                await Log("set", "Unable to set role as parameter is invalid.");
-                var errorEmbed = BotEmbeds.InvalidCountryCode();
-                await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
-                return;
-            }
-           
             await Log("set", "Have found 1 closest match, using that instead.");
             countryCode = searchResult.First().Alpha2;
             await Log("set", $"Best Parameter: [yellow]{countryCode}[/yellow]");
@@ -97,7 +101,6 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             {
                 
                 var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
-                var socketGuildUser = (SocketGuildUser) Context.User;
                 var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
                 await Log("set",$"Already in role [cyan]{getCountryToRemove.Country}[/cyan].");
@@ -131,7 +134,6 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             if (doesRoleExist)
             {
                 var getRole = MySqlUtility.GetRole(guildId, getCountry.Id);
-                var socketGuildUser = (SocketGuildUser) Context.User;
                 await socketGuildUser.AddRoleAsync(getRole.RoleId);
             }
             else
@@ -174,13 +176,19 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     }
                 }
 
-                var socketGuildUser = (SocketGuildUser) Context.User;
                 await socketGuildUser.AddRoleAsync(createdRole.Id);
                 MySqlUtility.AddRole(guildId, createdRole.Id, getCountry.Id);
             }
 
             MySqlUtility.AddUser(guildId, Context.User.Id, getCountry.Id);
             await Log("set", $"Added role [cyan]{getCountry.Country}[/cyan] to [green]{Context.User.Username}[/green].");
+
+            var g = _client.GetGuild(Program.StaticConfig.DiscordModel.GuildId);
+            var c = (SocketTextChannel)g.GetChannel(Program.StaticConfig.DiscordModel.LogChannelId);
+            var embed = BotEmbeds.AddedCountryInGuild(Context.Guild, socketGuildUser,  getCountry).Build();
+
+            await c.SendMessageAsync(embed: embed);
+
             var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
             await FollowupAsync(embed: countrySetEmbed.Build(), ephemeral: true);
         }
@@ -237,6 +245,10 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 }
 
                 var countryRemovedEmbed = BotEmbeds.CountryRemoved();
+                var g = _client.GetGuild(Program.StaticConfig.DiscordModel.GuildId);
+                var c = (SocketTextChannel)g.GetChannel(Program.StaticConfig.DiscordModel.LogChannelId);
+                var embed = BotEmbeds.RemovedCountryInGuild(Context.Guild, socketGuildUser).Build();
+                await c.SendMessageAsync(embed: embed);
                 await FollowupAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
             }
             catch (Discord.Net.HttpException)

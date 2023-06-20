@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using CountryBot.Embeds;
 using Discord;
 using Discord.Commands;
 using Discord.Interactions;
@@ -63,10 +64,33 @@ internal class Program
         await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
         _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
         commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
+        
+        _client.Ready += async () =>
+        {
+            if (IsDebug())
+                await commands.RegisterCommandsToGuildAsync(StaticConfig.DiscordModel.GuildId);
+            else
+                await commands.RegisterCommandsGloballyAsync();
+            
+            var numberOfUsers = MySqlUtility.UserCount();
+            await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
+
+            var dateTime = new DateTime(2000, 1, 1, 0, 0, 0)
+                .AddDays(Assembly.GetEntryAssembly()!.GetName().Version!.Build)
+                .AddSeconds(Assembly.GetEntryAssembly()!.GetName().Version!.Revision * 2).ToUniversalTime();
+            var dateSince = DateTime.UtcNow - dateTime;
+            var log = new ConsoleLogger();
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot",
+                $"Version: {Assembly.GetEntryAssembly()!.GetName().Version!}"));
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Build Date: {dateTime}"));
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot",
+                $"            ({GeneralUtility.ToReadableString(dateSince)} ago)"));
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is in {_client.Guilds.Count} guilds."));
+        };
 
         _client.UserLeft += async (guild, user) =>
         {
-            
+
             var log = new ConsoleLogger();
             var getUser = MySqlUtility.GetUser(guild.Id, user.Id);
             if (getUser == null) return;
@@ -90,37 +114,6 @@ internal class Program
             await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
         };
 
-        _client.Ready += async () =>
-        {
-            if (IsDebug())
-                await commands.RegisterCommandsToGuildAsync(StaticConfig.DiscordModel.TestGuildId);
-            else
-                await commands.RegisterCommandsGloballyAsync();
-
-            Console.WriteLine("Bot is in: ");
-            foreach (var guild in _client.Guilds)
-            {
-                Console.Write($"'{guild.Name}', ");
-            }
-
-            Console.WriteLine();
-            
-            var numberOfUsers = MySqlUtility.UserCount();
-            await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
-
-            var dateTime = new DateTime(2000, 1, 1, 0, 0, 0)
-                .AddDays(Assembly.GetEntryAssembly()!.GetName().Version!.Build)
-                .AddSeconds(Assembly.GetEntryAssembly()!.GetName().Version!.Revision * 2).ToUniversalTime();
-            var dateSince = DateTime.UtcNow - dateTime;
-            var log = new ConsoleLogger();
-            await log.Log(new LogMessage(LogSeverity.Info, "Bot",
-                $"Version: {Assembly.GetEntryAssembly()!.GetName().Version!}"));
-            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Build Date: {dateTime}"));
-            await log.Log(new LogMessage(LogSeverity.Info, "Bot",
-                $"            ({GeneralUtility.ToReadableString(dateSince)} ago)"));
-            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is in {_client.Guilds.Count} guilds."));
-        };
-
         _client.LeftGuild += async guild =>
         {
             var log = new ConsoleLogger();
@@ -130,6 +123,11 @@ internal class Program
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot was removed from guild '{guild.Name}'."));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is now in {_client.Guilds.Count} guilds."));
             await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
+            var g = _client.GetGuild(StaticConfig.DiscordModel.GuildId);
+            var c = (SocketTextChannel)g.GetChannel(StaticConfig.DiscordModel.LogChannelId);
+            var embed = BotEmbeds.LeftGuild(guild).Build();
+            await c.SendMessageAsync(embed: embed);
+            MySqlUtility.RemoveGuild(guild.Id);
         };
 
         _client.JoinedGuild += async guild =>
@@ -137,6 +135,11 @@ internal class Program
             var log = new ConsoleLogger();
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot was added to guild '{guild.Name}'."));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is now in {_client.Guilds.Count} guilds."));
+            var g = _client.GetGuild(StaticConfig.DiscordModel.GuildId);
+            var c = (SocketTextChannel) g.GetChannel(StaticConfig.DiscordModel.LogChannelId);
+            var embed = BotEmbeds.JoinedGuild(guild).Build();
+            await c.SendMessageAsync(embed: embed);
+            MySqlUtility.AddGuild(guild.Id, guild.Name);
         };
 
         await _client.LoginAsync(TokenType.Bot, StaticConfig.DiscordModel.Token);

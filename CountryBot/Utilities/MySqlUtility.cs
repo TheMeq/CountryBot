@@ -377,4 +377,23 @@ internal static class MySqlUtility
         var results = DoQuery("SELECT * FROM valid_countries WHERE RoleId = @RoleId", arguments).ConvertToList<CountryModel>();
         return results[0];
     }
+
+    public static void AddGuild(ulong guildId, string guildName)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            { "GuildId", guildId },
+            { "GuildName", guildName }
+        };
+        DoNonQuery("INSERT INTO guildinfo (GuildId, GuildName) VALUES (@GuildId, @GuildName)", arguments);
+    }
+
+    public static void RemoveGuild(ulong guildId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            { "GuildId", guildId },
+        };
+        DoNonQuery("DELETE FROM guildinfo WHERE GuildId = @GuildId", arguments);
+    }
 }

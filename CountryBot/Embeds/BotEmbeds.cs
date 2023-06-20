@@ -4,6 +4,7 @@ using System.Linq;
 using CountryBot.Models;
 using CountryBot.Utilities;
 using Discord;
+using Discord.WebSocket;
 
 namespace CountryBot.Embeds;
 
@@ -93,6 +94,7 @@ internal static class BotEmbeds
         embed.AddField("/admin removeonempty", "Choose whether a role should be deleted if it's empty or not.");
         return embed;
     }
+
 
     public static EmbedBuilder PurgeComplete()
     {
@@ -224,5 +226,41 @@ internal static class BotEmbeds
             .WithTitle("User Added")
             .WithDescription("A user was added to a role successfully.")
             .WithColor(DiscordGreen);
+    }
+
+    public static EmbedBuilder JoinedGuild(SocketGuild guild)
+    {
+        return new EmbedBuilder()
+            .WithTitle("Joined Guild")
+            .WithDescription($"**{guild.Name}** ({guild.Id})")
+            .WithColor(DiscordGreen)
+            .WithThumbnailUrl(guild.IconUrl);
+    }
+
+    public static EmbedBuilder LeftGuild(SocketGuild guild)
+    {
+        return new EmbedBuilder()
+            .WithTitle("Left Guild")
+            .WithDescription($"**{guild.Name}** ({guild.Id})")
+            .WithColor(DiscordRed)
+            .WithThumbnailUrl(guild.IconUrl);
+    }
+
+    public static EmbedBuilder RemovedCountryInGuild(SocketGuild guild, SocketGuildUser user)
+    {
+        return new EmbedBuilder()
+            .WithTitle("User Removed Country")
+            .WithDescription($"Guild: **{guild.Name}** ({guild.Id})\r\nUser: **{user.Username}** ({user.Id})")
+            .WithColor(DiscordRed)
+            .WithThumbnailUrl(user.GetAvatarUrl());
+    }
+
+    public static EmbedBuilder AddedCountryInGuild(SocketGuild guild, SocketGuildUser user, CountryModel country)
+    {
+        return new EmbedBuilder()
+            .WithTitle("User Added Country")
+            .WithDescription($"Guild: **{guild.Name}** ({guild.Id})\r\nUser: **{user.Username}** ({user.Id})\r\nCountry: **{country.Country}** :flag_{country.Alpha2.ToLower()}:")
+            .WithColor(DiscordGreen)
+            .WithThumbnailUrl(user.GetAvatarUrl());
     }
 }

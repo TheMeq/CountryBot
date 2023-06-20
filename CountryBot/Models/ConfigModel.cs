@@ -11,7 +11,7 @@ public class DiscordModel
 {
     public string Token { get; set; }
     public ulong GuildId { get; set; }
-    public ulong TestGuildId { get; set; }
+    public ulong LogChannelId { get; set; }
 }
 
 public class MysqlModel
