@@ -14,15 +14,29 @@ internal static class BotEmbeds
     private static readonly Color DiscordYellow = new(250, 168, 26);
     private static readonly Color DiscordRed = new(237, 66, 59);
 
-    public static EmbedBuilder SearchResults(IEnumerable<CountryModel> listOfCountries, string searchQuery)
+    public static EmbedBuilder SearchResults(List<CountryModel> listOfCountries, string searchQuery)
     {
-        return new EmbedBuilder()
+        var searchResults = listOfCountries.Take(10).ToList();
+        var searchResultCount = listOfCountries.Count();
+
+        var embedBuilder = new EmbedBuilder()
             .WithTitle($"Search Results for '{searchQuery}'.")
-            .WithDescription(listOfCountries
+            .WithDescription(searchResults
                 .Aggregate(string.Empty,
-                    (current, country) => 
-                        current + $"{country.Country} - {country.Alpha2} or {country.Alpha3}\r\n"))
+                    (current, country) =>
+                        current + $"{country.Country} - ``{country.Alpha2}`` or ``{country.Alpha3}``\r\n"))
             .WithColor(DiscordGreen);
+
+        if (searchResultCount > 10)
+        {
+            embedBuilder.Description += $"**Note:** There are more than 10 results. Please refine your search criteria.";
+        }
+
+        embedBuilder.Description =
+            "Use these with the ``/set`` command.\r\nAlternatively, use the ``/choose`` command to create an easy-to-use selector.\r\n\r\n" +
+            embedBuilder.Description;
+
+        return embedBuilder;
     }
 
     public static EmbedBuilder InvalidCountryCode(List<CountryModel> tryThis = null)
@@ -74,7 +88,7 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle($"Search Results for '{searchQuery}'.")
             .WithDescription("No Results Found.")
-            .WithColor(DiscordRed);            
+            .WithColor(DiscordRed);
     }
 
     public static EmbedBuilder Help(string supportUrl, bool isAdmin)
