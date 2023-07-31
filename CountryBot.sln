@@ -3,14 +3,20 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CountryBot", "CountryBot\CountryBot.csproj", "{83784EBC-8C60-452F-AEE9-02771AA10D43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CountryBot", "CountryBot\CountryBot.csproj", "{83784EBC-8C60-452F-AEE9-02771AA10D43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CustomDebug|Any CPU = CustomDebug|Any CPU
+		CustomRelease|Any CPU = CustomRelease|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{83784EBC-8C60-452F-AEE9-02771AA10D43}.CustomDebug|Any CPU.ActiveCfg = CustomDebug|Any CPU
+		{83784EBC-8C60-452F-AEE9-02771AA10D43}.CustomDebug|Any CPU.Build.0 = CustomDebug|Any CPU
+		{83784EBC-8C60-452F-AEE9-02771AA10D43}.CustomRelease|Any CPU.ActiveCfg = CustomRelease|Any CPU
+		{83784EBC-8C60-452F-AEE9-02771AA10D43}.CustomRelease|Any CPU.Build.0 = CustomRelease|Any CPU
 		{83784EBC-8C60-452F-AEE9-02771AA10D43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{83784EBC-8C60-452F-AEE9-02771AA10D43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{83784EBC-8C60-452F-AEE9-02771AA10D43}.Release|Any CPU.ActiveCfg = Release|Any CPU

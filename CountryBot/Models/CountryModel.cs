@@ -9,4 +9,5 @@ internal class CountryModel
     public string Alpha3 { get; set; }
     public string Numeric { get; set; }
     public int CallingCode { get; set; }
+    public string Emoji { get; set; }
 }

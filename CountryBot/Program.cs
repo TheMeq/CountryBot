@@ -25,19 +25,36 @@ internal class Program
 #endif
     }
 
+    private static bool IsCustom()
+    {
+#if CUSTOMDEBUG || CUSTOMRELEASE
+        return true;
+#else
+    return false;
+#endif
+    }
+
     private DiscordSocketClient _client;
     public static ConfigModel StaticConfig { get; private set; }
     public static Task Main() => new Program().MainAsync();
 
     private async Task MainAsync()
     {
+
         using var host = Host.CreateDefaultBuilder()
             .ConfigureServices((_, services) =>
                 services
+#if CUSTOMDEBUG || CUSTOMRELEASE
                     .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
                     {
                         GatewayIntents = Guilds | GuildBans | GuildEmojis | GuildMessageReactions | DirectMessages | GuildMembers, AlwaysDownloadUsers = true
                     }))
+#else
+                    .AddSingleton(_ => new DiscordSocketClient(new DiscordSocketConfig
+                    {
+                        GatewayIntents = Guilds | GuildBans | GuildEmojis | GuildMessageReactions | DirectMessages, AlwaysDownloadUsers = true
+                    }))
+#endif
                     .AddTransient<ConsoleLogger>()
                     .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()))
                     .AddSingleton<InteractionHandler>()
@@ -56,10 +73,12 @@ internal class Program
     {
         using var serviceScope = host.Services.CreateScope();
         var provider = serviceScope.ServiceProvider;
-
         var commands = provider.GetRequiredService<InteractionService>();
         _client = provider.GetRequiredService<DiscordSocketClient>();
-        StaticConfig = GeneralUtility.BuildConfig("appsettings.json");
+
+        var config = IsCustom() ? "appsettings-custom.json" : "appsettings.json";
+        StaticConfig = GeneralUtility.BuildConfig(config);
+
 
         await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
         _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
@@ -83,6 +102,7 @@ internal class Program
             await log.Log(new LogMessage(LogSeverity.Info, "Bot",
                 $"Version: {Assembly.GetEntryAssembly()!.GetName().Version!}"));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Build Date: {dateTime}"));
+            await log.Log(new LogMessage(LogSeverity.Info, "bot", IsCustom() ? "Custom Mode" : ""));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot",
                 $"            ({GeneralUtility.ToReadableString(dateSince)} ago)"));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is in {_client.Guilds.Count} guilds."));
@@ -132,14 +152,21 @@ internal class Program
 
         _client.JoinedGuild += async guild =>
         {
+            var getGuild = MySqlUtility.GetGuild(guild.Id);
+            if (getGuild != null)
+            {
+                MySqlUtility.RemoveGuild(guild.Id);
+            }
+
             var log = new ConsoleLogger();
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot was added to guild '{guild.Name}'."));
             await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Bot is now in {_client.Guilds.Count} guilds."));
             var g = _client.GetGuild(StaticConfig.DiscordModel.GuildId);
-            var c = (SocketTextChannel) g.GetChannel(StaticConfig.DiscordModel.LogChannelId);
+            var c = (SocketTextChannel)g.GetChannel(StaticConfig.DiscordModel.LogChannelId);
             var embed = BotEmbeds.JoinedGuild(guild).Build();
             await c.SendMessageAsync(embed: embed);
             MySqlUtility.AddGuild(guild.Id, guild.Name);
+
         };
 
         await _client.LoginAsync(TokenType.Bot, StaticConfig.DiscordModel.Token);

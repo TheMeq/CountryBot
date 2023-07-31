@@ -89,8 +89,6 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             await Log("set", "Have found 1 closest match, using that instead.");
             countryCode = searchResult.First().Alpha2;
             await Log("set", $"Best Parameter: [yellow]{countryCode}[/yellow]");
-            
-            
         }
 
         var getCountry = MySqlUtility.GetCountry(countryCode);
@@ -100,7 +98,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
             if (isUserInRoleAlready)
             {
-                
+
                 var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
                 var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
@@ -130,7 +128,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     }
                 }
             }
-            
+
             var doesRoleExist = MySqlUtility.DoesRoleExist(guildId, getCountry.Id);
             if (doesRoleExist)
             {
@@ -192,16 +190,28 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
 
             var countrySetEmbed = BotEmbeds.CountrySet(getCountry);
             await FollowupAsync(embed: countrySetEmbed.Build(), ephemeral: true);
+
+#if CUSTOMDEBUG || CUSTOMRELEASE
+            switch (guildId)
+            {
+                case 664644571552284672:
+                    await CustomModule.SetNickname(Context, getCountry, socketGuildUser);
+                    break;
+            }
+#endif
+
         }
-        catch (Discord.Net.HttpException)
+        catch (Discord.Net.HttpException e)
         {
             await Log("set", $"Unable to set role for [green]{Context.User.Username}[/green] to [yellow]{countryCode}[/yellow] - Bot is missing permissions.");
             var errorEmbed = BotEmbeds.MissingPermissions();
             await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
+            Console.WriteLine(e);
+
         }
-        
+
         var userCount = MySqlUtility.UserCount();
-        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);        
+        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 
     [SlashCommand("remove", "Remove your currently set country.")]
@@ -251,6 +261,14 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 var embed = BotEmbeds.RemovedCountryInGuild(Context.Guild, socketGuildUser).Build();
                 await c.SendMessageAsync(embed: embed);
                 await FollowupAsync(embed: countryRemovedEmbed.Build(), ephemeral: true);
+#if CUSTOMDEBUG || CUSTOMRELEASE
+                switch (guildId)
+                {
+                    case 664644571552284672:
+                        await CustomModule.RemoveNickname(Context, getCountry, socketGuildUser);
+                        break;
+                }
+#endif
             }
             catch (Discord.Net.HttpException)
             {
@@ -279,7 +297,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         {
             isAdmin = true;
         }
-        
+
         await DeferAsync(ephemeral: true);
         await Log("help","Help command used.");
         var helpEmbed = BotEmbeds.Help(Program.StaticConfig.SupportUrl, isAdmin);
@@ -401,7 +419,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Log("choose", $"Passing parameter [yellow]{selectedValue}[/yellow] to [cyan]set[/cyan].");
         await Set(selectedValue);
-        
+
     }
 }
 
