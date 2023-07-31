@@ -277,4 +277,12 @@ internal static class BotEmbeds
             .WithColor(DiscordGreen)
             .WithThumbnailUrl(user.GetAvatarUrl());
     }
+
+    public static EmbedBuilder PurgeEmpty()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Empty Roles Removed")
+            .WithDescription("All roles created by CountryBot that are empty have been removed.")
+            .WithColor(DiscordGreen);
+    }
 }

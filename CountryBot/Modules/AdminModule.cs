@@ -4,6 +4,7 @@ using CountryBot.Utilities;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CountryBot.Modules;
@@ -20,7 +21,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
         if (message != "") await _logger.Log(new LogMessage(logSeverity, source, $"    {message}"));
     }
-    
+
     public AdminModule(ConsoleLogger logger, DiscordSocketClient client)
     {
         _logger = logger;
@@ -115,7 +116,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
             return;
         }
-        
+
         await Log("admin adduser",$"Manually adding [green]{user.Username}[/green] to [cyan]{country.Country}[/cyan] in [red]{Context.Guild.Name}[/red]");
         MySqlUtility.AddUser(guildId, user.Id, country.Id);
         await FollowupAsync(embed: BotEmbeds.AddUserComplete().Build(), ephemeral: true);
@@ -123,7 +124,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 
-    
+
     [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
     [Throttle(ThrottleBy.Guild, 1, 21600)]
     public async Task Flags(bool enableFlags)
@@ -186,10 +187,10 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("removeonempty", "Choose whether your roles should be removed when the last user leaves.")]
     public async Task RemoveOnEmpty(bool enableRemoveOnEmpty)
     {
-        
+
         await Log("admin removeonempty", $"Parameter: [yellow]{enableRemoveOnEmpty}[/yellow]");
         await DeferAsync(ephemeral: true);
-        
+
         ulong guildId;
         try
         {
@@ -202,11 +203,59 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
         }
-        
+
         MySqlUtility.SetGuildRemoveOnEmpty(guildId, enableRemoveOnEmpty ? 1 : 0);
         var removeOnEmptyChangeCompleteEmbed = BotEmbeds.RemoveOnEmptyChangeComplete(enableRemoveOnEmpty);
         await FollowupAsync(embed: removeOnEmptyChangeCompleteEmbed.Build(), ephemeral: true);
-    
-    
+
+
+    }
+
+    [SlashCommand("purgeempty", "Removes all empty CountryBot roles on the guild.")]
+    public async Task PurgeEmpty()
+    {
+
+        await Log("admin purgeempty", $"Parameter: none");
+        await DeferAsync(ephemeral: true);
+
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log("admin purgeempty", "Tried to DM the Bot.");
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
+            return;
+        }
+
+        var roles = Context.Guild.Roles;
+        var countries = MySqlUtility.GetCountries();
+
+        foreach (var role in roles)
+        {
+            var roleUsers = Context.Guild.GetRole(role.Id).Members.ToList();
+
+            if (roleUsers.Count != 0) continue;
+            if (countries.All(x => x.Country != role.Name)) continue;
+
+            var country = countries.First(x => x.Country == role.Name);
+            var count = MySqlUtility.DoesRoleContainUsers(guildId, country.Id);
+
+            if (count) continue;
+
+            MySqlUtility.RemoveRole(guildId, role.Id);
+            await Log("admin purgeempty",
+                $"Removing [red]{role.Name}[/red] from [red]{Context.Guild.Name}[/red]");
+            await role.DeleteAsync();
+
+        }
+
+        var purgeEmptyEmbed = BotEmbeds.PurgeEmpty();
+        await FollowupAsync(embed: purgeEmptyEmbed.Build(), ephemeral: true);
+
+
     }
 }
