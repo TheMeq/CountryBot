@@ -59,8 +59,8 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await FollowupAsync(embed: purgeCompleteEmbed.Build(), ephemeral: true);
     }
 
-    [SlashCommand("createdirectlybelow", "Specifies what position the bot should create the new roles under.")]
-    public async Task CreateDirectlyBelow(IRole role)
+    [SlashCommand("createdirectlyabove", "Specifies what position the bot should create the new roles above.")]
+    public async Task CreateDirectlyAbove(IRole role)
     {
         await DeferAsync(ephemeral: true);
         ulong guildId;
@@ -70,17 +70,17 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log("admin createdirectlybelow", "Tried to DM the Bot.");
+            await Log("admin createdirectlyabove", "Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
         }
-        await Log("admin createdirectlybelow", $"All new roles will now appear under the role with ID {role.Id}");
+        await Log("admin createdirectlyabove", $"All new roles will now appear above the role with ID {role.Id}");
         MySqlUtility.AddDirectlyUnderRole(guildId, role.Id);
         await FollowupAsync(embed: BotEmbeds.CreateDirectlyBelowComplete().Build(), ephemeral: true);
     }
 
-    [SlashCommand("removedirectlybelow", "Resets the setting that specifies what position the bot should create the new roles under.")]
+    [SlashCommand("removedirectlyabove", "Resets the setting that specifies what position the bot should create the new roles above.")]
     public async Task RemoveDirectlyBelow()
     {
         await DeferAsync(ephemeral: true);
@@ -91,12 +91,12 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         }
         catch
         {
-            await Log("admin removedirectlybelow", "Tried to DM the Bot.");
+            await Log("admin removedirectlyabove", "Tried to DM the Bot.");
             var invalidGuildEmbed = BotEmbeds.NotInDms();
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
         }
-        await Log("admin removedirectlybelow", $"All new roles will now appear at the bottom of the role list");
+        await Log("admin removedirectlyabove", $"All new roles will now appear at the bottom of the role list");
         MySqlUtility.AddDirectlyUnderRole(guildId, 0);
         await FollowupAsync(embed: BotEmbeds.RemoveDirectlyBelowComplete().Build(), ephemeral: true);
     }

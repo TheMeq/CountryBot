@@ -404,6 +404,6 @@ internal static class MySqlUtility
             { "GuildId", guildId },
             { "RoleId", roleId }
         };
-        DoNonQuery("INSERT INTO guildinfo (GuildId, CreateDirectlyBelow) VALUES (@GuildId, @RoleId) ON DUPLICATE KEY UPDATE CreateDirectlyBelow = @RoleId", arguments);
+        DoNonQuery("INSERT INTO guilds (GuildId, CreateDirectlyBelow) VALUES (@GuildId, @RoleId) ON DUPLICATE KEY UPDATE CreateDirectlyBelow = @RoleId", arguments);
     }
 }
