@@ -20,7 +20,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await _logger.Log(new LogMessage(logSeverity, source, $"[Guild: [red]{Context.Guild.Name} ({Context.Guild.Id})[/red]][User: [green]{Context.User.Username}#{Context.User.Discriminator} ({Context.User.Id})[/green]][Command: [cyan]{ranCommand}[/cyan]]"));
         if (message != "") await _logger.Log(new LogMessage(logSeverity, source, $"    {message}"));
     }
-    
+
     public AdminModule(ConsoleLogger logger, DiscordSocketClient client)
     {
         _logger = logger;
@@ -89,7 +89,7 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await FollowupAsync(embed: BotEmbeds.OverrideComplete().Build(), ephemeral: true);
     }
 
-    [SlashCommand("adduser", "Overrides the bot's role system. Converts existing server roles to work with the bot.")]
+    [SlashCommand("adduser", "Overrides the bot's role system. Allows manually assigning of users to country.")]
     public async Task AddUser(IUser user, string alpha2)
     {
 
@@ -108,22 +108,33 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        if (Context.User.Id != 207949234106793984)
-        {
-            await Log("admin adduser","Tried to use a developer command.");
-            var notDeveloperEmbed = BotEmbeds.NotDeveloper();
-            await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
-            return;
-        }
-        
+        //if (Context.User.Id != 207949234106793984)
+        //{
+        //    await Log("admin adduser","Tried to use a developer command.");
+        //    var notDeveloperEmbed = BotEmbeds.NotDeveloper();
+        //    await FollowupAsync(embed: notDeveloperEmbed.Build(), ephemeral: true);
+        //    return;
+        //}
+
         await Log("admin adduser",$"Manually adding [green]{user.Username}[/green] to [cyan]{country.Country}[/cyan] in [red]{Context.Guild.Name}[/red]");
+
         MySqlUtility.AddUser(guildId, user.Id, country.Id);
+
+#if CUSTOMDEBUG || CUSTOMRELEASE
+            switch (guildId)
+            {
+                case 664644571552284672:
+                    await CustomModule.SetNickname(Context, country, (SocketGuildUser) user);
+                    break;
+            }
+#endif
+
         await FollowupAsync(embed: BotEmbeds.AddUserComplete().Build(), ephemeral: true);
         var userCount = MySqlUtility.UserCount();
         await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 
-    
+
     [SlashCommand("flags", "Choose whether your roles should have flags or not. This only works if your guild is server boosted.")]
     [Throttle(ThrottleBy.Guild, 1, 21600)]
     public async Task Flags(bool enableFlags)
@@ -186,10 +197,10 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("removeonempty", "Choose whether your roles should be removed when the last user leaves.")]
     public async Task RemoveOnEmpty(bool enableRemoveOnEmpty)
     {
-        
+
         await Log("admin removeonempty", $"Parameter: [yellow]{enableRemoveOnEmpty}[/yellow]");
         await DeferAsync(ephemeral: true);
-        
+
         ulong guildId;
         try
         {
@@ -202,11 +213,11 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
             await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
             return;
         }
-        
+
         MySqlUtility.SetGuildRemoveOnEmpty(guildId, enableRemoveOnEmpty ? 1 : 0);
         var removeOnEmptyChangeCompleteEmbed = BotEmbeds.RemoveOnEmptyChangeComplete(enableRemoveOnEmpty);
         await FollowupAsync(embed: removeOnEmptyChangeCompleteEmbed.Build(), ephemeral: true);
-    
-    
+
+
     }
 }
