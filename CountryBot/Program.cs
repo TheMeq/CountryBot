@@ -64,14 +64,14 @@ internal class Program
         await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
         _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
         commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
-        
+
         _client.Ready += async () =>
         {
             if (IsDebug())
                 await commands.RegisterCommandsToGuildAsync(StaticConfig.DiscordModel.GuildId);
             else
                 await commands.RegisterCommandsGloballyAsync();
-            
+
             var numberOfUsers = MySqlUtility.UserCount();
             await _client.SetGameAsync($"{numberOfUsers:##,###} users across the world!", null, ActivityType.Watching);
 

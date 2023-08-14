@@ -5,6 +5,7 @@ using CountryBot.Models;
 using CountryBot.Utilities;
 using Discord;
 using Discord.WebSocket;
+// ReSharper disable PossibleMultipleEnumeration
 
 namespace CountryBot.Embeds;
 
@@ -283,6 +284,22 @@ internal static class BotEmbeds
         return new EmbedBuilder()
             .WithTitle("Empty Roles Removed")
             .WithDescription("All roles created by CountryBot that are empty have been removed.")
+            .WithColor(DiscordGreen);
+    }
+
+    public static EmbedBuilder CreateDirectlyBelowComplete()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Role Position Updated!")
+            .WithDescription("All new roles created by CountryBot will now appear directly under the specified role.")
+            .WithColor(DiscordGreen);
+    }
+
+    public static EmbedBuilder RemoveDirectlyBelowComplete()
+    {
+        return new EmbedBuilder()
+            .WithTitle("Role Position Updated!")
+            .WithDescription("All new roles created by CountryBot will now appear at the bottom of the role list.")
             .WithColor(DiscordGreen);
     }
 }

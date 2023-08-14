@@ -59,6 +59,48 @@ public class AdminModule : InteractionModuleBase<SocketInteractionContext>
         await FollowupAsync(embed: purgeCompleteEmbed.Build(), ephemeral: true);
     }
 
+    [SlashCommand("createdirectlybelow", "Specifies what position the bot should create the new roles under.")]
+    public async Task CreateDirectlyBelow(IRole role)
+    {
+        await DeferAsync(ephemeral: true);
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log("admin createdirectlybelow", "Tried to DM the Bot.");
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
+            return;
+        }
+        await Log("admin createdirectlybelow", $"All new roles will now appear under the role with ID {role.Id}");
+        MySqlUtility.AddDirectlyUnderRole(guildId, role.Id);
+        await FollowupAsync(embed: BotEmbeds.CreateDirectlyBelowComplete().Build(), ephemeral: true);
+    }
+
+    [SlashCommand("removedirectlybelow", "Resets the setting that specifies what position the bot should create the new roles under.")]
+    public async Task RemoveDirectlyBelow()
+    {
+        await DeferAsync(ephemeral: true);
+        ulong guildId;
+        try
+        {
+            guildId = Context.Guild.Id;
+        }
+        catch
+        {
+            await Log("admin removedirectlybelow", "Tried to DM the Bot.");
+            var invalidGuildEmbed = BotEmbeds.NotInDms();
+            await FollowupAsync(embed: invalidGuildEmbed.Build(), ephemeral: true);
+            return;
+        }
+        await Log("admin removedirectlybelow", $"All new roles will now appear at the bottom of the role list");
+        MySqlUtility.AddDirectlyUnderRole(guildId, 0);
+        await FollowupAsync(embed: BotEmbeds.RemoveDirectlyBelowComplete().Build(), ephemeral: true);
+    }
+
     [SlashCommand("override", "Overrides the bot's role system. Converts existing server roles to work with the bot.")]
     public async Task Override(IRole role, string alpha2)
     {

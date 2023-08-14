@@ -48,7 +48,7 @@ internal static class MySqlUtility
                     Console.WriteLine(e);
                     throw;
                 }
-               
+
             }
             return objT;
         }).ToList();
@@ -69,9 +69,9 @@ internal static class MySqlUtility
         using var sda = new MySqlDataAdapter(command);
         var dt = new DataTable();
         sda.Fill(dt);
-        
+
         connection.CloseAsync();
-        
+
         return dt;
     }
 
@@ -395,5 +395,15 @@ internal static class MySqlUtility
             { "GuildId", guildId },
         };
         DoNonQuery("DELETE FROM guildinfo WHERE GuildId = @GuildId", arguments);
+    }
+
+    public static void AddDirectlyUnderRole(ulong guildId, ulong roleId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            { "GuildId", guildId },
+            { "RoleId", roleId }
+        };
+        DoNonQuery("INSERT INTO guildinfo (GuildId, CreateDirectlyBelow) VALUES (@GuildId, @RoleId) ON DUPLICATE KEY UPDATE CreateDirectlyBelow = @RoleId", arguments);
     }
 }

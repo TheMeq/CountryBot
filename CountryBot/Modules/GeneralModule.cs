@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using CountryBot.Embeds;
 using Discord.WebSocket;
 using RequireUserPermissionAttribute = Discord.Interactions.RequireUserPermissionAttribute;
+// ReSharper disable PossibleMultipleEnumeration
 
 namespace CountryBot.Modules;
 
@@ -60,6 +61,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
+        var guild = MySqlUtility.GetGuild(guildId);
+
         var socketGuildUser = (SocketGuildUser)Context.User;
 
         var isValidCountryCode = MySqlUtility.IsValidCountryCode(countryCode);
@@ -89,8 +92,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             await Log("set", "Have found 1 closest match, using that instead.");
             countryCode = searchResult.First().Alpha2;
             await Log("set", $"Best Parameter: [yellow]{countryCode}[/yellow]");
-            
-            
+
+
         }
 
         var getCountry = MySqlUtility.GetCountry(countryCode);
@@ -100,7 +103,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             var isUserInRoleAlready = MySqlUtility.IsUserInRoleAlready(guildId, Context.User.Id);
             if (isUserInRoleAlready)
             {
-                
+
                 var getUser = MySqlUtility.GetUser(guildId, Context.User.Id);
                 var getRole = MySqlUtility.GetRole(guildId, getUser!.CountryId);
                 var getCountryToRemove = MySqlUtility.GetCountryById(getRole.CountryId);
@@ -130,7 +133,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     }
                 }
             }
-            
+
             var doesRoleExist = MySqlUtility.DoesRoleExist(guildId, getCountry.Id);
             if (doesRoleExist)
             {
@@ -150,8 +153,28 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                     return;
                 }
 
+                var position = 0;
+                if (guild is { CreateDirectlyBelow: > 0 })
+                {
+                    try
+                    {
+                        var getAboveRole = Context.Guild.GetRole(guild.CreateDirectlyBelow);
+                        position = getAboveRole.Position;
+                    }
+                    catch
+                    {
+                        //
+                    }
+                }
+
                 var createdRole = await Context.Guild.CreateRoleAsync($"{getCountry.Country}", null, null, false, false,
                     RequestOptions.Default);
+
+                if (position > 0)
+                {
+                    await createdRole.ModifyAsync(x => x.Position = position + 1, RequestOptions.Default);
+                }
+
                 await Log("set",$"Created role [cyan]{createdRole.Name}[/cyan].");
                 if (Context.Guild.PremiumTier >= PremiumTier.Tier2)
                 {
@@ -199,9 +222,9 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
             var errorEmbed = BotEmbeds.MissingPermissions();
             await FollowupAsync(embed: errorEmbed.Build(), ephemeral: true);
         }
-        
+
         var userCount = MySqlUtility.UserCount();
-        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);        
+        await _client.SetGameAsync($"{userCount:##,###} users across the world!", null, ActivityType.Watching);
     }
 
     [SlashCommand("remove", "Remove your currently set country.")]
@@ -279,7 +302,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         {
             isAdmin = true;
         }
-        
+
         await DeferAsync(ephemeral: true);
         await Log("help","Help command used.");
         var helpEmbed = BotEmbeds.Help(Program.StaticConfig.SupportUrl, isAdmin);
@@ -401,7 +424,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
     {
         await Log("choose", $"Passing parameter [yellow]{selectedValue}[/yellow] to [cyan]set[/cyan].");
         await Set(selectedValue);
-        
+
     }
 }
 
