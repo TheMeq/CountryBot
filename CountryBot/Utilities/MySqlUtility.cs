@@ -202,6 +202,17 @@ internal static class MySqlUtility
         return results[0];
     }
 
+    public static RoleModel GetRole(ulong guildId, ulong roleId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"RoleId", roleId},
+            {"GuildId", guildId}
+        };
+        var results = DoQuery("SELECT * FROM roles WHERE RoleId = @RoleId and GuildId = @GuildId", arguments).ConvertToList<RoleModel>();
+        return results[0];
+    }
+
     public static void RemoveRole(ulong guildId, ulong roleInfoRoleId)
     {
         var arguments = new Dictionary<string, object>
@@ -220,6 +231,18 @@ internal static class MySqlUtility
             {"GuildId", guildId}
         };
         var results = DoQuery("SELECT * FROM roles WHERE CountryId = @CountryId and GuildId = @GuildId", arguments)
+            .ConvertToList<RoleModel>();
+        return results.Count > 0;
+    }
+
+    public static bool DoesRoleExist(ulong guildId, ulong roleId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            {"RoleId", roleId},
+            {"GuildId", guildId}
+        };
+        var results = DoQuery("SELECT * FROM roles WHERE RoleId = @RoleId and GuildId = @GuildId", arguments)
             .ConvertToList<RoleModel>();
         return results.Count > 0;
     }
@@ -279,7 +302,7 @@ internal static class MySqlUtility
         DoNonQuery("DELETE FROM users WHERE GuildId = @GuildId", arguments);
     }
 
-    public static CountryModel GetCountryById(ulong id)
+    public static CountryModel GetCountryById(int id)
     {
         var arguments = new Dictionary<string, object>
         {
@@ -405,5 +428,15 @@ internal static class MySqlUtility
             { "RoleId", roleId }
         };
         DoNonQuery("INSERT INTO guilds (GuildId, CreateDirectlyBelow) VALUES (@GuildId, @RoleId) ON DUPLICATE KEY UPDATE CreateDirectlyBelow = @RoleId", arguments);
+    }
+
+    public static void RemoveRoleForAllUsers(ulong guildId, int countryId)
+    {
+        var arguments = new Dictionary<string, object>
+        {
+            { "GuildId", guildId },
+            { "CountryId", countryId }
+        };
+        DoNonQuery("DELETE FROM users WHERE GuildId = @GuildId and CountryId = @countryId", arguments);
     }
 }

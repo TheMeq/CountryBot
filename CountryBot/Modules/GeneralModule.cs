@@ -322,10 +322,12 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         var guildUserCount = MySqlUtility.UserCount(Context.Guild.Id);
         var embed = BotEmbeds.NewStats(guildName, stats, 1, userCount, guildCount,guildUserCount);
         var components = new ComponentBuilder();
+        components.WithButton("Refresh", $"StatsNavigator:refresh,1,{worldWide}", ButtonStyle.Secondary);
         if (maxPages > 1)
         {
             components.WithButton("Next", $"StatsNavigator:next,1,{worldWide}", ButtonStyle.Secondary);
         }
+
         await FollowupAsync(embed: embed.Build(), components: components.Build(), ephemeral: true);
     }
 
@@ -339,6 +341,8 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
                 break;
             case "previous":
                 currentPage--;
+                break;
+            case "refresh":
                 break;
         }
         await DeferAsync(ephemeral: true);
@@ -355,6 +359,7 @@ public class GeneralModule : InteractionModuleBase<SocketInteractionContext>
         {
             components.WithButton("Previous", $"StatsNavigator:previous,{currentPage},{worldWide}", ButtonStyle.Secondary);
         }
+        components.WithButton("Refresh", $"StatsNavigator:refresh,{currentPage},{worldWide}", ButtonStyle.Secondary);
         if (maxPages > currentPage)
         {
             components.WithButton("Next", $"StatsNavigator:next,{currentPage},{worldWide}", ButtonStyle.Secondary);

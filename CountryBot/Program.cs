@@ -62,8 +62,8 @@ internal class Program
         StaticConfig = GeneralUtility.BuildConfig("appsettings.json");
 
         await provider.GetRequiredService<InteractionHandler>().InitializeAsync();
-        _client.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
-        commands.Log += _ => provider.GetRequiredService<ConsoleLogger>().Log(_);
+        _client.Log += m => provider.GetRequiredService<ConsoleLogger>().Log(m);
+        commands.Log += m => provider.GetRequiredService<ConsoleLogger>().Log(m);
 
         _client.Ready += async () =>
         {
@@ -140,6 +140,20 @@ internal class Program
             var embed = BotEmbeds.JoinedGuild(guild).Build();
             await c.SendMessageAsync(embed: embed);
             MySqlUtility.AddGuild(guild.Id, guild.Name);
+        };
+
+        _client.RoleDeleted += async role =>
+        {
+            var guild = role.Guild;
+            var log = new ConsoleLogger();
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot", $"Role was deleted in '{role.Guild.Name}'. Checking if it's a a CountryBot role..."));
+            var results = MySqlUtility.DoesRoleExist(guild.Id, role.Id);
+            if (!results) return;
+            await log.Log(new LogMessage(LogSeverity.Info, "Bot",
+                $"Role was deleted in '{role.Guild.Name}'. It was a CountryBot role. Removing from database..."));
+            var getRole = MySqlUtility.GetRole(guild.Id, role.Id);
+            MySqlUtility.RemoveRoleForAllUsers(role.Guild.Id, getRole.CountryId);
+            MySqlUtility.RemoveRole(role.Guild.Id, role.Id);
         };
 
         await _client.LoginAsync(TokenType.Bot, StaticConfig.DiscordModel.Token);
